@@ -212,4 +212,55 @@ class Solution {
 
 
 
-## 
+## 第3天——字符串（简单）
+
+#### [剑指 Offer 05. 替换空格](https://leetcode.cn/problems/ti-huan-kong-ge-lcof/)
+
+```` java
+class Solution {
+    public String replaceSpace(String s) {
+        StringBuilder sb = new StringBuilder();
+        char[] ss = s.toCharArray();
+        for (int i = 0; i < ss.length; i++) {
+            if (ss[i] == ' ') {
+                sb.append("%20");
+            } else {
+                sb.append(ss[i]);
+            }
+        }
+
+        return sb.toString();
+    }
+}
+````
+
+
+
+#### [剑指 Offer 58 - II. 左旋转字符串](https://leetcode.cn/problems/zuo-xuan-zhuan-zi-fu-chuan-lcof/)
+
+``` java
+class Solution {
+    public String reverseLeftWords(String s, int n) {
+        char[] ss = s.toCharArray();
+        reverseWords(ss, 0, n - 1);
+        reverseWords(ss, n, ss.length - 1);
+        reverseWords(ss, 0, ss.length  - 1);
+        return new String(ss, 0, ss.length);
+    }
+
+    public void reverseWords(char[] s, int start, int end) {
+        while (start <= end) {
+            char temp = s[start];
+            s[start] = s[end];
+            s[end] = temp;
+            start++;
+            end--;
+        }
+    }
+}
+```
+
+
+
+
+
