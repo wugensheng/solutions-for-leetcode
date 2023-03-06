@@ -262,5 +262,102 @@ class Solution {
 
 
 
+## 第4天——查找算法（简单）
 
+#### [剑指 Offer 03. 数组中重复的数字](https://leetcode.cn/problems/shu-zu-zhong-zhong-fu-de-shu-zi-lcof/)
+
+``` java
+class Solution {
+    public int findRepeatNumber(int[] nums) { // 常规做法
+        Map<Integer, Integer> map = new HashMap<>();
+        for (int i = 0; i < nums.length; i++) {
+            if (map.containsKey(nums[i])) {
+                return nums[i];
+            } else {
+                map.put(nums[i], 1);
+            }
+        }
+
+        return -1;
+    }
+}
+```
+
+``` java
+class Solution {
+    public int findRepeatNumber(int[] nums) { // 将元素索引与元素值建立一对多的映射关系
+        int i = 0; 
+        while (i < nums.length) {
+            if (nums[i] == i) {
+                i++;
+                continue;
+            }
+            if (nums[nums[i]] == nums[i]) return nums[i];
+            int temp = nums[i];
+            nums[i] = nums[temp];
+            nums[temp] = temp;
+        }
+
+        return -1;
+    }
+}
+```
+
+
+
+#### [剑指 Offer 53 - I. 在排序数组中查找数字 I](https://leetcode.cn/problems/zai-pai-xu-shu-zu-zhong-cha-zhao-shu-zi-lcof/)
+
+```` java
+class Solution {
+    public int search(int[] nums, int target) {
+        if (nums.length == 0 || target > nums[nums.length - 1] || target < nums[0]) return 0;
+        int leftBoard = -1, rightBoard = -1;
+        int left = 0, right = nums.length - 1;
+        while (left <= right) {
+            int mid = left + ((right - left) >> 1);
+            if (nums[mid] < target) left = mid + 1;
+            else {
+                right = mid - 1;
+                leftBoard = right;
+            }
+        }
+
+        left = 0;
+        right = nums.length - 1;
+        while (left <= right) {
+            int mid = left + ((right - left) >> 1);
+            if (nums[mid] > target) right = mid - 1;
+            else {
+                left = mid + 1;
+                rightBoard = left;
+            }
+        }
+
+        if (rightBoard > leftBoard + 1) return rightBoard - leftBoard - 1;
+        return 0;
+    }
+}
+````
+
+
+
+#### [剑指 Offer 53 - II. 0～n-1中缺失的数字](https://leetcode.cn/problems/que-shi-de-shu-zi-lcof/)
+
+``` java
+class Solution {
+    public int missingNumber(int[] nums) {
+        int left = 0, right = nums.length - 1;
+        int leftBoard = nums.length - 1; // 当最后一个缺省时， leftboard 得不到更新
+        while (left <= right) {
+            int mid = left + ((right - left) >> 1);
+            if (nums[mid] == mid) left = mid + 1;
+            else {
+                right = mid - 1;
+                leftBoard = right;
+            }
+        }
+        return leftBoard + 1;
+    }
+}
+```
 
