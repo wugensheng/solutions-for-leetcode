@@ -1,6 +1,6 @@
 
 
-####  [3. 无重复字符的最长子串](https://leetcode.cn/problems/longest-substring-without-repeating-characters/)√
+####  [3. 无重复字符的最长子串](https://leetcode.cn/problems/longest-substring-without-repeating-characters/)
 
 ``` java
 class Solution {
@@ -784,6 +784,469 @@ class Solution {
             for (; y < w - loop; y++) res.add(matrix[x][y]);
         } else {
             for (; x < h - loop; x++) res.add(matrix[x][y]);
+        }
+
+        return res;
+    }
+}
+```
+
+
+
+#### [23. 合并K个升序链表](https://leetcode.cn/problems/merge-k-sorted-lists/)
+
+``` java
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ *     ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+ * }
+ */
+class Solution { // 分治思想优化顺序合并
+    public ListNode mergeKLists(ListNode[] lists) {
+        ListNode res = merge(lists, 0, lists.length - 1);
+        return res;
+    }
+    
+    public ListNode merge(ListNode[] lists, int l, int r) {
+        if (l == r) return lists[l];
+        if (l > r) return null;
+        int mid = (l + r) >> 1;
+        ListNode left = merge(lists, l, mid); // 先各自解决子问题
+        ListNode right = merge(lists, mid + 1, r);
+        return mergeTwoList(left, right); // 最后做总处理
+    }
+
+    public ListNode mergeTwoList(ListNode list1, ListNode list2) {
+        ListNode dummy = new ListNode();
+        ListNode cur1 = list1, cur2 = list2, cur = dummy;
+        while (cur1 != null && cur2 != null) {
+            if (cur1.val < cur2.val) {
+                cur.next = cur1;
+                cur1 = cur1.next;
+            } else {
+                cur.next = cur2;
+                cur2 = cur2.next;
+            }
+            cur = cur.next;
+        }
+        cur.next = cur1 == null ? cur2 : cur1;
+        return dummy.next;
+    }
+
+}
+```
+
+
+
+#### [92. 反转链表 II](https://leetcode.cn/problems/reverse-linked-list-ii/)
+
+``` java
+class Solution {
+    public ListNode reverseBetween(ListNode head, int left, int right) {
+        if (left == right) return head;
+
+        ListNode dummy = new ListNode();
+        dummy.next = head;
+        ListNode cur = dummy, end = null;
+        int des = left;
+        while (des > 1) { // 找到左边节点的前一个
+            cur = cur.next;
+            des--;
+        }
+        end = cur;
+        des = right - left + 1;
+        while (des > 0) { // 找右边的节点
+            end = end.next;
+            des--;
+        }
+        ListNode next = end.next;
+
+        ListNode[] nodes = reverse(cur.next, end);
+        cur.next = nodes[0];
+        nodes[1].next = next;
+
+        return dummy.next;
+
+    }
+
+    public ListNode[] reverse(ListNode start, ListNode end) { // 翻转链表
+        ListNode cur = start, pre = null, temp = null;
+        while (cur != end) {
+            temp = cur.next;
+            cur.next = pre;
+            pre = cur;
+            cur = temp;
+        }
+        cur.next = pre;
+        return new ListNode[]{end, start};
+    }
+}
+```
+
+
+
+#### [415. 字符串相加](https://leetcode.cn/problems/add-strings/)
+
+``` java
+class Solution {
+    public String addStrings(String num1, String num2) {
+        char[] s1 = num1.toCharArray(), s2 = num2.toCharArray();
+        StringBuilder sb = new StringBuilder();
+        int i = s1.length - 1, j = s2.length - 1, add = 0; // 两个指针，一个进位符
+
+        while (i >= 0 || j >= 0 || add != 0) {
+            int x = i >= 0 ? s1[i] - '0' : 0;
+            int y = j >= 0 ? s2[j] - '0' : 0;
+            int sum = x + y + add;
+            sb.append(sum % 10);
+            add = sum / 10;
+            i--;
+            j--;
+        }
+        sb.reverse(); // 翻转
+        
+        return sb.toString();
+    }
+}
+```
+
+
+
+#### [142. 环形链表 II](https://leetcode.cn/problems/linked-list-cycle-ii/)
+
+``` java
+public class Solution {
+    public ListNode detectCycle(ListNode head) {
+        ListNode fast = head, slow = head;
+
+        while (fast != null && fast.next != null) {
+            fast = fast.next.next;
+            slow = slow.next;
+            if (slow == fast) {
+                slow = head;
+                while (slow != fast) {
+                    slow = slow.next;
+                    fast = fast.next;
+                }
+                return fast;
+            }
+        }
+
+        return null;
+    }
+}
+```
+
+
+
+####  [300. 最长递增子序列](https://leetcode.cn/problems/longest-increasing-subsequence/)
+
+``` java
+class Solution {
+    public int lengthOfLIS(int[] nums) {
+        int[] dp = new int[nums.length];
+        dp[0] = 1;
+        int res = 1;
+        for (int i = 1; i < nums.length; i++) {
+            dp[i] = 1;
+            for (int j = 0; j < i; j++) {
+                if (nums[i] > nums[j]) {
+                    dp[i] = Math.max(dp[i], dp[j] + 1);
+                }
+            }
+            if (dp[i] > res) res = dp[i];
+        }
+
+        return res;
+    }
+}
+```
+
+
+
+#### [42. 接雨水](https://leetcode.cn/problems/trapping-rain-water/)
+
+``` java
+class Solution {
+    public int trap(int[] height) {
+        Deque<Integer> dq = new LinkedList<>();
+        int res = 0;
+
+        for (int i = 0; i < height.length; i++) {
+            while (!dq.isEmpty() && height[i] > height[dq.peek()]) {
+                int mid = dq.pop();
+                if (!dq.isEmpty()) {
+                    int h = Math.min(height[dq.peek()], height[i]) - height[mid]; // 求的是最小的那个
+                    int w = i - dq.peek() - 1; // 减去dq.peek()
+                    res += h * w;
+                }
+            }
+            dq.push(i);
+        }
+
+        return res;
+    }
+}
+```
+
+
+
+#### [143. 重排链表](https://leetcode.cn/problems/reorder-list/)
+
+``` java
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ *     ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+ * }
+ */
+class Solution {
+    public void reorderList(ListNode head) {
+        ListNode dummy = new ListNode();
+        dummy.next = head;
+        ListNode cur = dummy;
+        int count = 0;
+        while (cur.next != null) {
+            cur = cur.next;
+            count++;
+        }
+
+        if (count <= 2) return;
+
+        int half = (count + 1) / 2;
+        cur = dummy;
+        while (half > 0) {
+            cur = cur.next;
+            half--;
+        }
+
+        ListNode left = head, right = cur.next;
+        cur.next = null;
+        cur = dummy;
+        right = reverse(right);
+
+        while (left != null && right != null) {
+            cur.next = left;
+            left = left.next;
+            cur = cur.next;
+            cur.next = right;
+            right = right.next;
+            cur = cur.next;
+        }
+        cur.next = left;
+    }
+
+    public ListNode reverse(ListNode head) {
+        ListNode cur = head, pre = null, temp = null;
+        while (cur.next != null) {
+            temp = cur.next;
+            cur.next = pre;
+            pre = cur;
+            cur = temp;
+        }
+        cur.next = pre;
+        return cur;
+    }
+}
+```
+
+
+
+#### [124. 二叉树中的最大路径和](https://leetcode.cn/problems/binary-tree-maximum-path-sum/)
+
+``` java
+class Solution {
+    int res = Integer.MIN_VALUE;
+
+    public int maxPathSum(TreeNode root) {
+        int maxSum = traversal(root);
+        return res;
+    }
+
+    public int traversal(TreeNode root) {
+        if (root == null) return 0;
+
+        int leftMax = Math.max(traversal(root.left), 0);
+        int rightMax = Math.max(traversal(root.right), 0);
+
+        int maxSum = leftMax + rightMax + root.val; // 该节点做根节点的最大路径和
+
+        if (maxSum > res) res = maxSum;
+        
+        return root.val + Math.max(leftMax, rightMax); // 返回该节点不坐根节点的最大路径和
+    }
+}
+```
+
+
+
+#### [94. 二叉树的中序遍历](https://leetcode.cn/problems/binary-tree-inorder-traversal/)
+
+```` java
+class Solution {
+    List<Integer> res = new ArrayList<>();
+    public List<Integer> inorderTraversal(TreeNode root) {
+        traversal(root);
+        return res;
+    }
+
+    public void traversal(TreeNode root) {
+        if (root == null) return;
+        traversal(root.left);
+        res.add(root.val);
+        traversal(root.right);
+    }
+}
+````
+
+
+
+#### [72. 编辑距离](https://leetcode.cn/problems/edit-distance/)
+
+``` java
+class Solution {
+    public int minDistance(String word1, String word2) {
+        // dp[i][j]: 表示w1[i - 1], w2[j - 1]结尾的最小操作次数
+        char[] w1 = word1.toCharArray(), w2 = word2.toCharArray();
+        int[][] dp = new int[w1.length + 1][w2.length + 1];
+        for (int i = 0; i <= w1.length; i++) dp[i][0] = i;
+        for (int j = 0; j <= w2.length; j++) dp[0][j] = j;
+
+        for (int i = 1; i <= w1.length; i++) {
+            for (int j = 1; j <= w2.length; j++) {
+                if (w1[i - 1] == w2[j - 1]) dp[i][j] = dp[i - 1][j - 1]; // 相等不用操作
+                else {// 不等，可以，w1删除，w2删除,w1或者w2修改
+                    dp[i][j] = Math.min(dp[i - 1][j] + 1, Math.min(dp[i][j - 1] + 1, dp[i - 1][j - 1] + 1));
+                }
+            }
+        }
+
+        return dp[w1.length][w2.length];
+    }
+}
+```
+
+
+
+#### [232. 用栈实现队列](https://leetcode.cn/problems/implement-queue-using-stacks/)
+
+``` java
+class MyQueue {
+
+    Deque<Integer> st1 = new LinkedList<>(); // 入队列
+    Deque<Integer> st2 = new LinkedList<>(); // 出队列
+
+    public MyQueue() {
+
+    }
+    
+    public void push(int x) {
+        st1.push(x);
+    }
+    
+    public int pop() {
+        if (!st2.isEmpty()) return st2.pop();
+        while (!st1.isEmpty()) {
+            st2.push(st1.pop());
+        }
+        return st2.pop();
+    }
+    
+    public int peek() {
+        if (!st2.isEmpty()) return st2.peek();
+        while (!st1.isEmpty()) {
+            st2.push(st1.pop());
+        }
+        return st2.peek();
+    }
+    
+    public boolean empty() {
+        return st1.isEmpty() && st2.isEmpty();
+    }
+}
+```
+
+
+
+#### [704. 二分查找](https://leetcode.cn/problems/binary-search/)
+
+``` java
+class Solution {
+    public int search(int[] nums, int target) {
+        int left = 0, right = nums.length - 1;
+
+        while (left <= right) {
+            int mid = left + (right - left) / 2;
+            if (nums[mid] == target) return mid;
+            else if (nums[mid] > target) right = mid - 1;
+            else left = mid + 1;
+        }
+
+        return -1;
+    }
+}
+```
+
+
+
+#### [19. 删除链表的倒数第 N 个结点](https://leetcode.cn/problems/remove-nth-node-from-end-of-list/)
+
+``` java
+class Solution {
+    public ListNode removeNthFromEnd(ListNode head, int n) {
+        ListNode dummy = new ListNode();
+        dummy.next = head;
+
+        ListNode fast = dummy, slow = dummy;
+        while (n > 0) {
+            fast = fast.next;
+            n--;
+        }
+
+        while (fast.next != null) {
+            fast = fast.next;
+            slow = slow.next;
+        }
+
+        slow.next = slow.next.next;
+
+        return dummy.next;
+    }
+}
+```
+
+
+
+#### [199. 二叉树的右视图](https://leetcode.cn/problems/binary-tree-right-side-view/)
+
+``` java
+class Solution {
+    public List<Integer> rightSideView(TreeNode root) {
+        List<Integer> res = new ArrayList<>();
+        if (root == null) return res;
+
+        Queue<TreeNode> q = new LinkedList<>();
+        q.offer(root);
+        
+        while (!q.isEmpty()) {
+            int size = q.size();
+            for (int i = 0; i < size; i++) {
+                TreeNode node = q.poll();
+                if (i ==  size - 1) {
+                    res.add(node.val);
+                }
+                if (node.left != null) q.offer(node.left);
+                if (node.right != null) q.offer(node.right);
+            }
         }
 
         return res;
