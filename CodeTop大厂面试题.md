@@ -1254,3 +1254,336 @@ class Solution {
 }
 ```
 
+
+
+#### [56. 合并区间](https://leetcode.cn/problems/merge-intervals/)
+
+``` java
+class Solution {
+    public int[][] merge(int[][] intervals) {
+        List<int[]> res = new ArrayList<>();
+        Arrays.sort(intervals, (a, b) -> {
+            // 排序规则，按左区间升序排序，相同情况况下，按右区间降序排序
+            if (a[0] == b[0]) return b[1] - a[1];
+            return a[0] - b[0];
+        });
+
+        int start = intervals[0][0], end = intervals[0][1]; // 标记当前的区间范围
+        for (int i = 1; i < intervals.length; i++) {
+            if (intervals[i][0] > end) { // 有新区间
+                res.add(new int[]{start, end});
+                start = intervals[i][0];
+                end = intervals[i][1];
+            } else {
+                if (intervals[i][1] > end) end = intervals[i][1];
+            }
+        }
+        res.add(new int[]{start, end});
+
+        return res.toArray(new int[res.size()][2]);
+    }
+}
+```
+
+
+
+#### [70. 爬楼梯](https://leetcode.cn/problems/climbing-stairs/)
+
+``` java
+class Solution {
+    public int climbStairs(int n) {
+        int[] dp = new int[n + 5];
+        dp[1] = 1;
+        dp[2] = 2;
+        for (int i = 3; i <= n; i++) {
+            dp[i] = dp[i - 1] + dp[i - 2];
+        }
+        return dp[n];
+    }
+}
+```
+
+
+
+#### [31. 下一个排列](https://leetcode.cn/problems/next-permutation/)
+
+``` java
+class Solution {
+    public void nextPermutation(int[] nums) {
+        if (nums.length == 1) return;
+        int i = nums.length - 2;
+        while (i >= 0 && nums[i] >= nums[i + 1]) i--; // 找第一个逆序对
+        if (i >= 0) {
+            int j = nums.length - 1;
+            while (j >= 0 && nums[j] <= nums[i]) j--; // 找升序列中第一个大于nums[i]数
+            int temp = nums[j];
+            nums[j] = nums[i];
+            nums[i] = temp;
+        }
+
+        // revserse
+        int left = i + 1, right = nums.length - 1;
+        while (left <= right) {
+            int temp = nums[left];
+            nums[left] = nums[right];
+            nums[right] = temp;
+            left++;
+            right--;
+        }
+        return;
+    }
+}
+```
+
+
+
+#### [148. 排序链表](https://leetcode.cn/problems/sort-list/)
+
+从上至下的递归归并排序
+
+``` java
+class Solution {
+    public ListNode sortList(ListNode head) {
+        return sortList(head, null);
+    }
+
+    public ListNode sortList(ListNode head, ListNode tail) {
+        if (head == null) return head;
+        if (head.next == tail) {  // tail是右边链的开始, 因为要merge所以左边的链要加null做结尾
+            head.next = null;
+            return head;
+        }
+
+        ListNode slow = head, fast = head;
+        while (fast != tail) {
+            fast = fast.next;
+            slow = slow.next;
+            if (fast != tail) fast = fast.next;
+        }
+
+        ListNode mid = slow;
+        ListNode list1 = sortList(head, mid); // 先递归解决子问题
+        ListNode list2 = sortList(mid, tail); 
+
+        return merge(list1, list2); // 最后解决本体问题
+    }
+
+    public ListNode merge(ListNode list1, ListNode list2) {
+        ListNode dummy = new ListNode();
+        ListNode cur = dummy, cur1 = list1, cur2 = list2;
+        
+        while (cur1 != null && cur2 != null) {
+            if (cur1.val < cur2.val) {
+                cur.next = cur1;
+                cur1 = cur1.next;
+            } else {
+                cur.next = cur2;
+                cur2 = cur2.next;
+            }
+            cur = cur.next;
+        }
+        cur.next = cur1 != null ? cur1 : cur2;
+        
+        return dummy.next;
+    }
+```
+
+
+
+#### [82. 删除排序链表中的重复元素 II](https://leetcode.cn/problems/remove-duplicates-from-sorted-list-ii/)
+
+``` java
+class Solution {
+    public ListNode deleteDuplicates(ListNode head) {
+        ListNode dummy = new ListNode();
+        dummy.next = head;
+        ListNode pre = dummy, cur = head;
+
+        while (cur != null && cur.next != null) {
+            if (cur.val == cur.next.val) {
+                int target = cur.val;
+                while (cur != null && cur.val == target) cur = cur.next; // 寻找重复数字
+                pre.next = cur;
+                cur = pre.next;
+                continue;
+            }
+            pre = pre.next;
+            cur = cur.next;
+        }
+
+        return dummy.next;
+    }
+}
+```
+
+
+
+#### [1143. 最长公共子序列](https://leetcode.cn/problems/longest-common-subsequence/)
+
+``` java
+class Solution {
+    public int longestCommonSubsequence(String text1, String text2) {
+        char[] t1 = text1.toCharArray(), t2 = text2.toCharArray();
+        int[][] dp = new int[t1.length + 1][t2.length + 1];
+
+        for (int i = 1; i <= t1.length; i++) {
+            for (int j = 1; j <= t2.length; j++) {
+                if (t1[i - 1] == t2[j - 1]) dp[i][j] = dp[i - 1][j - 1] + 1;
+                else {
+                    dp[i][j] = Math.max(Math.max(dp[i - 1][j], dp[i][j - 1]), dp[i - 1][j - 1]);
+                }
+            }
+        }
+
+        return dp[t1.length][t2.length];
+    }
+}
+```
+
+
+
+
+
+#### [69. x 的平方根 ](https://leetcode.cn/problems/sqrtx/)
+
+```` java
+class Solution {
+    public int mySqrt(int x) {
+        long left = 0, right = x;
+        while (left <= right) {
+            long mid = left + (right - left) / 2;
+            if (mid * mid == x) return (int)mid;
+            else if (mid * mid > x) right = mid - 1;
+            else left = mid + 1;
+        }
+
+        return (int)right;
+    }
+}
+````
+
+
+
+#### [2. 两数相加](https://leetcode.cn/problems/add-two-numbers/)
+
+``` java
+class Solution {
+    public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
+        ListNode head = null, tail = null;
+        int add = 0;
+        while (l1 != null || l2 != null || add != 0) {
+            int sum = add;
+            sum += l1 != null ? l1.val : 0;
+            sum += l2 != null ? l2.val : 0;
+            if (head == null) {
+                head = tail = new ListNode(sum % 10);
+            } else {
+                tail.next = new ListNode(sum % 10);
+                tail = tail.next;
+            }
+
+            if (l1 != null) l1 = l1.next;
+            if (l2 != null) l2 = l2.next;
+
+            add = sum / 10;
+        }
+
+        return head;
+    }
+}
+```
+
+
+
+#### [8. 字符串转换整数 (atoi)](https://leetcode.cn/problems/string-to-integer-atoi/)
+
+```` java
+class Solution {
+    public int myAtoi(String ss) {
+        char[] s = ss.toCharArray();
+        int left = 0, right = 0, flag = 0, isPos = 1;
+        double res = 0;
+
+        for (int i = 0; i < s.length; i++) {
+            boolean isNum = (s[i] >= '0' && s[i] <= '9');
+            if (!isNum && flag == 0) {
+                if (s[i] != ' ' && s[i] != '+' && s[i] != '-') return 0;
+                if (i == s.length - 1) return 0;
+                if (s[i] == ' ') continue;
+                if (!(s[i + 1] >= '0' && s[i + 1] <= '9')) return 0;
+            }
+            if (!isNum && flag == 1) break;
+            if (isNum) {
+                if (flag == 0) {
+                    if (i > 0 && s[i - 1] == '-') isPos = 0;
+                    left = i;
+                    flag = 1;
+                }
+                right = i;
+            }
+        }
+
+        if (flag == 0) return 0;
+
+        for (int i = left; i <= right; i++) {
+            res = res * 10;
+            res += s[i] - '0';
+        }
+        res *= isPos == 1 ? 1 : -1;
+
+        if (res > ((1 << 31) - 1)) res = ((1 << 31) - 1);
+        if (res < (1 << 31) * -1) res = (1 << 31) * -1;
+
+        return (int)res ;
+    }
+}
+````
+
+
+
+#### [93. 复原 IP 地址](https://leetcode.cn/problems/restore-ip-addresses/)
+
+```` java
+class Solution {
+    List<String> res = new ArrayList<>();
+    char[] path = new char[100];
+
+    public List<String> restoreIpAddresses(String s) {
+        char[] ss = s.toCharArray();
+        backtracking(ss, 0, 0, -1);
+        return res;
+    }
+
+    public void backtracking(char[] s, int start, int pointNums, int pathEnd) {
+        if (pointNums == 3) {
+            if (!isValid(s, start, s.length - 1)) return;
+            for (int i = start; i < s.length; i++) path[++pathEnd] = s[i];
+            res.add(new String(path, 0, pathEnd + 1));
+        }
+
+        int temp = pathEnd;
+        for (int i = start; i <= start + 2 && i < s.length; i++) {
+            if (!isValid(s, start, i)) continue;
+            for (int j = start; j <= i; j++) path[++temp] = s[j];
+            path[++temp] = '.';
+            backtracking(s, i + 1, pointNums + 1, temp);
+            temp = pathEnd;
+        }
+    }
+
+    public boolean isValid(char[] s, int start, int end) {
+        if (start > end || end - start > 2 || start > s.length - 1) return false;
+        if (s[start] == '0' && start != end) return false;
+        
+        int sum = 0;
+        for (int i = start; i <= end; i++) {
+            sum *= 10;
+            sum += s[i] - '0';
+        }
+
+        if (sum > 255) return false;
+        return true;
+    }
+}
+````
+
