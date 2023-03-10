@@ -1587,3 +1587,179 @@ class Solution {
 }
 ````
 
+
+
+#### [239. 滑动窗口最大值](https://leetcode.cn/problems/sliding-window-maximum/)
+
+``` java
+class Solution {
+
+    class myDeque {
+        Deque<Integer> dq = new LinkedList<>();
+
+        public myDeque() {
+
+        }
+
+        public void push(int x) {
+            while (!dq.isEmpty() && x > dq.peekLast()) dq.pollLast();
+            dq.offerLast(x);
+        }
+
+        public void pop(int x) {
+            if (!dq.isEmpty() && dq.peekFirst() == x) dq.pollFirst();
+        }
+
+        public int peek() {
+            if (!dq.isEmpty()) return dq.peekFirst();
+            return -1;
+        }
+    }
+
+    public int[] maxSlidingWindow(int[] nums, int k) {
+        int[] res = new int[nums.length - k + 1];
+        int index = 0;
+        myDeque dq = new myDeque();
+        for (int i = 0; i < k; i++) dq.push(nums[i]);
+        res[index++] = dq.peek();
+
+        for (int i = k; i < nums.length; i++) {
+            dq.pop(nums[i - k]);
+            dq.push(nums[i]);
+            res[index++] = dq.peek();
+        }
+
+        return res;
+    }
+}
+```
+
+
+
+#### [41. 缺失的第一个正数](https://leetcode.cn/problems/first-missing-positive/)
+
+``` java
+class Solution {
+    public int firstMissingPositive(int[] nums) { // 数组长度为n，如果这个数组中的所有1-n中间的数字按照对应的下标排序，那么从前往后遍历，第一个不符合对应关系的数字就是缺少的最小正数
+        int n = nums.length;
+        for (int i = 0; i < nums.length; i++) {
+            while (nums[i] > 0 && nums[i] <= n && nums[nums[i] - 1] != nums[i]) { // 如果一个数不在正确的位置上，就给他交换到正确的位置
+                int temp = nums[i];
+                nums[i] = nums[nums[i] - 1];
+                nums[temp - 1] = temp; 
+            }
+        }
+
+        for (int i = 0; i < n; i++) {
+            if (nums[i] != i + 1) return i + 1;
+        }
+
+        return n + 1;
+    }
+}
+```
+
+
+
+#### [剑指 Offer 22. 链表中倒数第k个节点](https://leetcode.cn/problems/lian-biao-zhong-dao-shu-di-kge-jie-dian-lcof/)
+
+```` java
+class Solution {
+    public ListNode getKthFromEnd(ListNode head, int k) {
+        ListNode fast = head, slow = head;
+
+        while (k - 1 > 0) {
+            fast = fast.next;
+            k--;
+        }
+
+        while (fast.next != null) {
+            fast = fast.next;
+            slow = slow.next;
+        }
+
+        return slow;
+    }
+}
+````
+
+
+
+#### [76. 最小覆盖子串](https://leetcode.cn/problems/minimum-window-substring/)
+
+滑动窗口
+
+``` java
+class Solution {
+    public String minWindow(String ss, String tt) {
+        char[] s = ss.toCharArray(), t = tt.toCharArray();
+        int[] map = new int[100];
+        int[] mark = new int[100];
+
+        for (int i = 0; i < t.length; i++) {
+            map[t[i] - 'A']++;
+            mark[t[i] - 'A'] = 1;
+        }
+
+        int left = 0, right = 0, min = Integer.MAX_VALUE;
+        int resLeft = -1, resRight = -1;
+        while (right < s.length) {
+            if (mark[s[right] - 'A'] == 1) map[s[right] - 'A']--;
+            
+            while (check(map) && left <= right) {
+                if (right - left + 1 < min) {
+                    resLeft = left;
+                    resRight = right;
+                    min = right - left + 1;
+                }
+                if (mark[s[left] - 'A'] == 1) map[s[left] - 'A']++;
+                left++;
+            }
+            right++;
+        }
+
+        return resLeft == -1 ? "" : new String(s, resLeft, min);
+    }
+
+    public boolean check(int[] map) {
+        for (int i = 0; i < map.length; i++) {
+            if (map[i] > 0) return false;
+        }
+        return true;
+    }
+}
+```
+
+
+
+#### [105. 从前序与中序遍历序列构造二叉树](https://leetcode.cn/problems/construct-binary-tree-from-preorder-and-inorder-traversal/)
+
+``` java
+class Solution {
+    public TreeNode buildTree(int[] preorder, int[] inorder) {
+        return getTree(preorder, inorder, 0, preorder.length - 1, 0, inorder.length - 1);
+    }
+
+    public TreeNode getTree(int[] preorder, int[] inorder, int preStart, int preEnd, int inStart, int inEnd) {
+        if (preStart > preEnd) return null;
+
+        int mid = preorder[preStart], index = 0;
+        TreeNode node = new TreeNode(mid);
+        for (int i = inStart; i <= inEnd; i++) {
+            if (inorder[i] == mid) {
+                index = i;
+                break;
+            }
+        }
+
+        node.left = getTree(preorder, inorder, preStart + 1, index - inStart + preStart, inStart, index - 1);
+        node.right = getTree(preorder, inorder, index - inStart + preStart + 1, preEnd, index + 1, inEnd);
+        
+        return node;
+    }
+}
+```
+
+
+
+#### 
