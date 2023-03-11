@@ -1762,4 +1762,310 @@ class Solution {
 
 
 
-#### 
+#### [322. 零钱兑换](https://leetcode.cn/problems/coin-change/)
+
+``` java
+class Solution {
+    public int coinChange(int[] coins, int amount) { // 完全背包，组合数
+        // 从一堆数里选几个数，并满足一个要求，再求一个最优解
+        int[] dp = new int[amount + 1];
+        for (int i = 0; i <= amount; i++) dp[i] = Integer.MAX_VALUE;
+        dp[0] = 0;
+
+        for (int i = 1; i <= coins.length; i++) {
+            for (int j = coins[i - 1]; j <= amount; j++) {
+                if (dp[j - coins[i - 1]] == Integer.MAX_VALUE) continue;
+                dp[j] = Math.min(dp[j], dp[j - coins[i - 1]] + 1);
+            }
+        }
+
+        return dp[amount] == Integer.MAX_VALUE ? -1 : dp[amount];
+    }
+}
+```
+
+
+
+#### [165. 比较版本号](https://leetcode.cn/problems/compare-version-numbers/)
+
+``` java
+class Solution {
+    public int compareVersion(String version1, String version2) {
+        char[] v1 = version1.toCharArray(), v2 = version2.toCharArray();
+        int left1 = 0, right1 = 0, left2 = 0, right2 = 0;
+        while (right1 < v1.length && right2 < v2.length) {
+            while (right1 < v1.length && v1[right1] != '.') right1++;
+            while (right2 < v2.length && v2[right2] != '.') right2++;
+            int res = compare(v1, left1, right1 - 1, v2, left2, right2 - 1);
+            if (res == 0) {
+                left1 = right1 + 1;
+                left2 = right2 + 1;
+                right1++;
+                right2++;
+            } else return res; 
+        }
+
+        if (right2 < v2.length && right1 >= v1.length) {
+            while (right2 < v2.length) {
+                while (right2 < v2.length && v2[right2] != '.') right2++;
+                if (getSum(v2, left2, right2 - 1) != 0) {
+                    // System.out.println(new String(v2, left2, right2 - left2));
+                    return -1;
+                }
+                left2 = right2 + 1;
+                right2++;
+            }
+        }
+        if (right2 >= v2.length && right1 < v1.length) {
+            while (right1 < v1.length) {
+                while (right1 < v1.length && v1[right1] != '.') right1++;
+                if (getSum(v1, left1, right1 - 1) != 0) return 1;
+                left1 = right1 + 1;
+                right1++;
+            }
+        }
+        return 0;
+    }
+
+    public int getSum(char[] v, int l, int r) {
+        int res = 0;
+        for (int i = l; i <= r; i++) {
+            res *= 10;
+            res += v[i] - '0';
+        }
+        return res;
+    }
+
+    public int compare(char[] v1, int l1, int r1, char[] v2, int l2, int r2) {
+        int res1 = getSum(v1, l1, r1);
+        int res2 = getSum(v2, l2, r2);
+
+        if (res1 > res2) return 1;
+        else if (res1 < res2) return -1;
+        return 0;
+    }
+}
+```
+
+
+
+#### [78. 子集](https://leetcode.cn/problems/subsets/)
+
+``` java
+class Solution {
+    // 找出所有子集，是组合问题的一种，但是是找整个搜索树的所有节点
+    // 组合问题，和切割问题，是找搜索树的叶子节点
+    // 这两种搜索树其实都是根据一种思想得来：怎么找所有的组合，在单纯的组合问题中，k个位置的放置方法抽象出来是一颗搜索树；切割问题中，分割成k段的分割方法抽象出来也是一颗搜索树
+    
+    List<List<Integer>> res = new ArrayList<>();
+    List<Integer> path = new ArrayList<>();
+
+    public void backtrack(int[] nums, int startIndex) {
+        res.add(new ArrayList<>(path));
+
+        for (int i = startIndex; i < nums.length; i++) {
+            path.add(nums[i]);
+            backtrack(nums, i + 1);
+            path.remove(path.size() - 1);
+        }
+    }
+        
+    public List<List<Integer>> subsets(int[] nums) {
+        backtrack(nums, 0);
+        return res;
+    }
+}
+```
+
+
+
+#### [43. 字符串相乘](https://leetcode.cn/problems/multiply-strings/)
+
+``` java
+class Solution {
+    public String multiply(String num1, String num2) {
+        if (num2.equals("0") || num1.equals("0")) return "0";
+        char[] n1 = num1.toCharArray(), n2 = num2.toCharArray();
+        int[] res = new int[500];
+        int a = 0, b = 0;
+        int n = n1.length, m = n2.length;
+        for (int i = n - 1; i >= 0; i--) {
+            a = n1[i] - '0';
+            for (int j = m - 1; j >= 0; j--) {
+                b = n2[j] - '0';
+                res[i + j + 1] += a * b;
+            }
+        }
+
+        for (int i = n + m - 1; i > 0; i--) {
+            res[i - 1] += res[i] / 10;
+            res[i] %= 10;
+        }
+        int index = res[0] == 0 ? 1 : 0;
+        StringBuilder sb = new StringBuilder();
+        // while (index < n + m - 1 && res[index] == 0) index++;
+        for (int i = index; i < n + m; i++) sb.append(res[i]);
+
+        return sb.toString();
+    }
+}
+```
+
+
+
+#### [200. 岛屿数量](https://leetcode.cn/problems/number-of-islands/)
+
+深度优先搜索
+
+``` java
+class Solution {
+    public int numIslands(char[][] grid) {
+        int h = grid.length, w = grid[0].length;
+        int res = 0;
+        for (int i = 0; i < h; i++) {
+            for (int j = 0; j < w; j++) {
+                if (grid[i][j] == '1') {
+                    res++;
+                    dfs(grid, i, j, h, w);            
+                }
+            }
+        }
+
+        return res;
+    }
+
+    public void dfs(char[][] grid, int i, int j, int h, int w) {
+        if (i < 0 || i >= h || j < 0 || j >= w || grid[i][j] == '0') return;
+
+        grid[i][j] = '0';
+        dfs(grid, i - 1, j, h, w);
+        dfs(grid, i + 1, j, h, w);
+        dfs(grid, i, j - 1, h, w);
+        dfs(grid, i, j + 1, h, w);
+    }
+}
+```
+
+ 
+
+#### [179. 最大数](https://leetcode.cn/problems/largest-number/)
+
+``` java
+class Solution {
+    public String largestNumber(int[] num) {
+        Integer[] nums = new Integer[num.length]; // 转换成包装类型
+        for (int i = 0; i < num.length; i++) nums[i] = num[i];
+        Arrays.sort(nums, (a, b) -> {
+            int res = compare(a, b);
+            return res;
+        });
+        if (nums[0] == 0) return "0";
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < nums.length; i++) sb.append(nums[i]);
+
+        return sb.toString();
+    }
+
+    public int compare(int a, int b) {
+        long apix = 10, bpix = 10;
+        while (apix <= b) {
+            apix *= 10;
+        }
+        while (bpix <= a) {
+            bpix *= 10;
+        }
+
+        if (a * apix + b - b * bpix - a > 0) return -1; // a在前面更大
+        return 1;
+    }
+
+
+}
+```
+
+
+
+#### [104. 二叉树的最大深度](https://leetcode.cn/problems/maximum-depth-of-binary-tree/)
+
+``` java
+class Solution {
+    public int maxDepth(TreeNode root) {
+        if (root == null) return 0;
+
+        return Math.max(maxDepth(root.left), maxDepth(root.right)) + 1;
+    }
+}
+```
+
+
+
+#### [155. 最小栈](https://leetcode.cn/problems/min-stack/)
+
+``` java
+class MinStack {
+    Deque<Integer> st1 = new LinkedList<>(); // 存数据
+    Deque<Integer> st2 = new LinkedList<>(); // 维护最小值
+
+    public MinStack() {
+
+    }
+    
+    public void push(int val) {
+        st1.push(val);
+        if (st2.isEmpty()) st2.push(val);
+        else {
+            if (val < st2.peek()) st2.push(val);
+            else st2.push(st2.peek());
+        }
+    }
+    
+    public void pop() {
+        st1.pop();
+        st2.pop();
+    }
+    
+    public int top() {
+        return st1.peek();
+    }
+    
+    public int getMin() {
+        return st2.peek();
+    }
+}
+
+/**
+ * Your MinStack object will be instantiated and called as such:
+ * MinStack obj = new MinStack();
+ * obj.push(val);
+ * obj.pop();
+ * int param_3 = obj.top();
+ * int param_4 = obj.getMin();
+ */
+```
+
+
+
+#### [110. 平衡二叉树](https://leetcode.cn/problems/balanced-binary-tree/)
+
+``` java
+class Solution {
+    public boolean isBalanced(TreeNode root) {
+        int res = checkBalanced(root);
+        return res != -1;
+    }
+
+    public int checkBalanced(TreeNode root) {
+        if (root == null) return 0;
+
+        int left = checkBalanced(root.left);
+        if (left == -1) return -1;
+        int right = checkBalanced(root.right);
+        if (right == -1) return -1;
+
+        if (left > right + 1 || right > left + 1) return -1;
+        
+        return left > right ? left + 1 : right + 1;
+    }
+}
+```
+
