@@ -2069,3 +2069,223 @@ class Solution {
 }
 ```
 
+
+
+#### [32. 最长有效括号](https://leetcode.cn/problems/longest-valid-parentheses/)
+
+```` java
+class Solution {
+    public int longestValidParentheses(String ss) {
+        char[] s = ss.toCharArray();
+        int max = 0, left = 0, right = 0;
+        for (int i = 0; i < s.length; i++) {
+            if (s[i] == '(') left++;
+            else right++;
+            if (left < right) {
+                left = 0;
+                right = 0;
+            } else if (left == right) {
+                max = Math.max(max, left * 2);
+            }
+        }
+
+        left = 0;
+        right = 0;
+        for (int i = s.length - 1; i >= 0; i--) {
+            if (s[i] == ')') right++;
+            else left++;
+            if (right < left) {
+                left = 0;
+                right = 0;
+            } else if (left == right) {
+                max = Math.max(max, left * 2);
+            }
+        }
+
+        return max;
+    }
+}
+````
+
+``` java
+class Solution {
+    public int longestValidParentheses(String ss) {
+        char[] s = ss.toCharArray();
+        int[] dp = new int[s.length];
+        int max = 0;
+        for (int i = 1; i < s.length; i++) {
+            if (s[i] == ')') {
+                if (s[i - 1] == '(') dp[i] = i > 2 ? dp[i - 2] + 2 : 2;
+                else if (i - dp[i - 1] > 0 && s[i - dp[i - 1] - 1] == '(') {
+                    dp[i] = dp[i - 1] + 2 + (i - dp[i - 1] - 2 >= 0 ? dp[i - dp[i - 1] - 2] : 0);
+                }
+                max = Math.max(max, dp[i]);
+            }
+        }
+
+        return max;
+    }
+}
+```
+
+
+
+#### [101. 对称二叉树](https://leetcode.cn/problems/symmetric-tree/)
+
+``` java
+class Solution {
+    public boolean isSymmetric(TreeNode root) {
+        if (root == null) return true;
+        boolean res = compare(root.left, root.right);
+        return res;
+    }
+
+    public boolean compare(TreeNode left, TreeNode right) {
+        if (left == null && right == null) return true;
+        if (left == null) return false;
+        if (right == null) return false;
+
+        if (left.val != right.val) return false;
+        boolean a = compare(left.left, right.right);
+        boolean b = compare(left.right, right.left);
+        return a && b;
+    }
+}
+```
+
+
+
+#### [129. 求根节点到叶节点数字之和](https://leetcode.cn/problems/sum-root-to-leaf-numbers/)
+
+``` java
+class Solution {
+    int res = 0;
+    public int sumNumbers(TreeNode root) {
+        backtrack(root, 0);
+        return res;
+    }
+
+    public void backtrack(TreeNode root, int x) {
+        if (root.left == null && root.right == null) {
+            res += x * 10 + root.val;
+            return;
+        }
+
+        int temp = x * 10 + root.val;
+        if (root.left != null) backtrack(root.left, temp);
+        if (root.right != null) backtrack(root.right, temp);
+        return;
+    }
+}
+```
+
+
+
+#### [543. 二叉树的直径](https://leetcode.cn/problems/diameter-of-binary-tree/)
+
+``` java
+class Solution {
+    int res = 0;
+    public int diameterOfBinaryTree(TreeNode root) {
+        backtrack(root);
+        return res - 1;
+    }
+
+    public int backtrack(TreeNode root) {
+        if (root == null) return 0;
+
+        int left = backtrack(root.left);
+        int right = backtrack(root.right);
+
+        res = Math.max(res, left + right + 1);
+        return Math.max(left, right) + 1;
+    }
+}
+```
+
+
+
+#### [113. 路径总和 II](https://leetcode.cn/problems/path-sum-ii/)
+
+```` java
+class Solution {
+    List<List<Integer>> res = new ArrayList<>();
+    List<Integer> path = new ArrayList<>();
+
+    public List<List<Integer>> pathSum(TreeNode root, int targetSum) {
+        if (root == null) return res;
+        path.add(root.val);
+        backtrack(root, root.val, targetSum); // 当前要从root的子节点开始选择
+        return res;
+    }
+
+    public void backtrack(TreeNode root, int sum, int target) {
+        if (root.left == null && root.right == null) {
+            if (sum != target) return;
+            res.add(new ArrayList<>(path));
+            return;
+        }
+
+        if (root.left != null) { // 选择左子节点
+            path.add(root.left.val);
+            backtrack(root.left, sum + root.left.val, target);
+            path.remove(path.size() - 1);
+        }
+        if (root.right != null) { // 选择右子节点
+            path.add(root.right.val);
+            backtrack(root.right, sum + root.right.val, target);
+            path.remove(path.size() - 1);
+        }
+    }
+}
+````
+
+
+
+#### [98. 验证二叉搜索树](https://leetcode.cn/problems/validate-binary-search-tree/)
+
+``` java
+class Solution {
+    TreeNode pre = null;
+
+    public boolean isValidBST(TreeNode root) { // 二叉搜索树的元素排列顺序就是，中序遍历的顺序，所以只要按照中序遍历，并记录pre节点，进行比价即可
+        if (root == null) return true;
+
+        boolean left = isValidBST(root.left);
+        if (pre != null && pre.val >= root.val) return false;
+        pre = root;
+
+        boolean right = isValidBST(root.right);
+
+        return left && right;
+    }
+}
+```
+
+
+
+#### [64. 最小路径和](https://leetcode.cn/problems/minimum-path-sum/)
+
+``` java
+class Solution {
+    public int minPathSum(int[][] grid) {
+        int[][] dp = new int[grid.length][grid[0].length];
+        
+        dp[0][0] = grid[0][0];
+        for (int i = 1; i < grid.length; i++) dp[i][0] = dp[i - 1][0] + grid[i][0];
+        for (int i = 1; i < grid[0].length; i++) dp[0][i] = dp[0][i - 1] + grid[0][i];
+
+        for (int i = 1; i < grid.length; i++) {
+            for (int j = 1; j < grid[0].length; j++) {
+                dp[i][j] = Math.min(dp[i - 1][j], dp[i][j - 1]) + grid[i][j];
+            }
+        }
+
+        return dp[grid.length - 1][grid[0].length - 1];
+    }
+}
+```
+
+
+
+#### 
