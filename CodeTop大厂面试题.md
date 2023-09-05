@@ -1335,49 +1335,56 @@ class Solution {
 
 ``` java
 class Solution {
+    // 链表归并排序
     public ListNode sortList(ListNode head) {
-        return sortList(head, null);
+        return mergeSort(head, null);
     }
 
-    public ListNode sortList(ListNode head, ListNode tail) {
-        if (head == null) return head;
-        if (head.next == tail) {  // tail是右边链的开始, 因为要merge所以左边的链要加null做结尾
+    // 1. 对链表进行拆分，各自递归排序
+    // 2. 对链表进行合并
+    public ListNode mergeSort(ListNode head, ListNode end) {
+        // 递归的出口，需要注意
+        if (head == null) return null;
+        if (head == end) {
+            // 链表排序，最终的每个部分都是一个单独的链表，要加null
             head.next = null;
             return head;
         }
 
-        ListNode slow = head, fast = head;
-        while (fast != tail) {
-            fast = fast.next;
+        ListNode dummy = new ListNode();
+        dummy.next = head;
+        ListNode fast = dummy, slow = dummy;
+        while (fast != end) {
             slow = slow.next;
-            if (fast != tail) fast = fast.next;
+            fast = fast.next;
+            if (fast != end) fast = fast.next;
         }
+        // list1先排序的话next就丢失了，可以先保存
+        ListNode list2 = mergeSort(slow.next, end);
+        ListNode list1 = mergeSort(head, slow);
 
-        ListNode mid = slow;
-        ListNode list1 = sortList(head, mid); // 先递归解决子问题
-        ListNode list2 = sortList(mid, tail); 
-
-        return merge(list1, list2); // 最后解决本体问题
+        return merge(list1, list2);
     }
 
     public ListNode merge(ListNode list1, ListNode list2) {
         ListNode dummy = new ListNode();
-        ListNode cur = dummy, cur1 = list1, cur2 = list2;
-        
-        while (cur1 != null && cur2 != null) {
-            if (cur1.val < cur2.val) {
-                cur.next = cur1;
-                cur1 = cur1.next;
+        ListNode cur = dummy;
+
+        while (list1 != null && list2 != null) {
+            if (list1.val < list2.val) {
+                cur.next = list1;
+                list1 = list1.next;
             } else {
-                cur.next = cur2;
-                cur2 = cur2.next;
+                cur.next = list2;
+                list2 = list2.next;
             }
             cur = cur.next;
         }
-        cur.next = cur1 != null ? cur1 : cur2;
-        
+
+        cur.next = (list1 != null ? list1 : list2);
         return dummy.next;
     }
+}
 ```
 
 
