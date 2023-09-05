@@ -2,30 +2,39 @@
 
 ####  [3. 无重复字符的最长子串](https://leetcode.cn/problems/longest-substring-without-repeating-characters/)
 
-``` java
-class Solution {
-    public int lengthOfLongestSubstring(String s) {
-        char[] s = ss.toCharArray();
-        if (s.length <= 1) return s.length;
-        int[] mark = new int[256];
-        int res = 0;
+用滑动窗口/双指针维护一个不重复序列：
 
+- 窗口右侧不重复则加入窗口
+- 窗口右侧重复则收缩窗口左侧，直至窗口不重复
+- 记录窗口最大长度
+
+```java
+class Solution {
+    // 双指针 维护一个不重复子串
+    public int lengthOfLongestSubstring(String s) {
+        char[] ss = s.toCharArray();
+        if (ss.length <= 1) return ss.length;
+
+        int[] mark = new int[256];
+        int maxLength = 0;
         int left = 0, right = 0;
-        while (right < s.length){ // 滑动窗口 维护一个不重复序列，不重复序列用哈希表管理
-            if (mark[s[right]] == 0) {
-                mark[s[right]] = 1;
+
+        while (right < ss.length) {
+            if (mark[ss[right]] == 0) {
+                mark[ss[right]] = 1;
+                if (right - left + 1 > maxLength) maxLength = right - left + 1;
                 right++;
-                if (right - left > res) res = right - left; 
                 continue;
             }
-            while(s[left] != s[right]) {
-                mark[s[left]] = 0;
+
+            while (ss[left] != ss[right]) {
+                mark[ss[left]] = 0;
                 left++;
             }
             left++;
             right++;
         }
-        return res;
+        return maxLength;
     }
 }
 ```
@@ -35,42 +44,40 @@ class Solution {
 #### [25. K 个一组翻转链表](https://leetcode.cn/problems/reverse-nodes-in-k-group/)
 
 ``` java
-/**
- * Definition for singly-linked list.
- * public class ListNode {
- *     int val;
- *     ListNode next;
- *     ListNode() {}
- *     ListNode(int val) { this.val = val; }
- *     ListNode(int val, ListNode next) { this.val = val; this.next = next; }
- * }
- */
 class Solution {
+    // 对翻转操作进行封装
     public ListNode reverseKGroup(ListNode head, int k) {
-        ListNode dummy = new ListNode();
-        dummy.next = head;
-        ListNode start = head, end = null, pre = dummy;
+        ListNode danny = new ListNode();
+        danny.next = head;
+        // start指向翻转部分的第一个节点，end指向翻转部分的最后一个节点
+        ListNode start = head, end = danny, next = null, pre = danny;
+        // 当start不为空的时候下一轮翻转节点继续遍历
         while (start != null) {
-            end = pre;
-            for (int i = 0; i < k; i++) {
+            int i = k;
+            while (i > 0) {
+                i--;
                 end = end.next;
-                if (end == null) {
-                    return dummy.next;
-                }
+                if (end == null) return danny.next;
             }
-            // 开始翻转
-            ListNode next = end.next;
+            // 记录下次开始的节点
+            next = end.next;
+            // 翻转
             reverse(start, end);
-            start.next = next; // 头放尾部
-            pre.next = end; // 尾部接pre后面
+            // 将翻转完的链表链接上
+            start.next = next;
+            pre.next = end;
+            // 更新
             pre = start;
+            end = start;
             start = pre.next;
         }
-        return dummy.next;
+        return danny.next;
     }
 
+    // 对指定节点之间的链表进行翻转
     public void reverse(ListNode start, ListNode end) {
-        ListNode cur = start, pre = null, temp = null;
+        ListNode pre = null, cur = start, temp = null;
+
         while (cur != end) {
             temp = cur.next;
             cur.next = pre;
@@ -88,20 +95,21 @@ class Solution {
 
 ``` java
 class Solution {
+    // 指定区间的链表的翻转操作
     public ListNode reverseList(ListNode head) {
-        if (head == null) return head;
+        if (head == null || head.next == null) return head;
 
-        ListNode cur = head, pre = null, temp = null;
-
-        while (cur.next != null) {
-            temp = cur.next;
+        // pre指向已经翻转过的链表的最后一个部分，cur指向当前要翻转的链表的开始部分
+        ListNode pre = null, cur = head;
+        
+        while (cur != null) {
+            ListNode temp = cur.next;
             cur.next = pre;
             pre = cur;
             cur = temp;
         }
-        cur.next = pre;
 
-        return cur;
+        return pre;
     }
 }
 ```
@@ -114,7 +122,13 @@ class Solution {
 
 ``` java
 class LRUCache {
-    // 双向链表数据结构
+    // LRU: Least Recently Used 是一种常见的缓存淘汰算法，淘汰最久没有被使用过的数据
+    // 使用哈希表和双向链表实现
+    // 哈希表用来定位关键字
+    // 双向链表用来对数据进行排序，最近使用过的放在最前面
+  	// hashmap获取关键字对应的变量
+  	// 双向链表可以实现，常数时间复杂度的插入删除操作，以及移动
+
     class DLinkedNode {
         int key;
         int value;
@@ -130,42 +144,38 @@ class LRUCache {
     private Map<Integer, DLinkedNode> cache = new HashMap<Integer, DLinkedNode>();
     private int capacity;
     private int size;
-    private DLinkedNode head, tail; // 虚拟头节点和虚拟尾节点
+    private DLinkedNode head, tail; // 虚拟头尾节点
+
 
     public LRUCache(int capacity) {
-        // 初始化
         this.capacity = capacity;
         this.size = 0;
-        // 使用虚拟头节点和虚拟尾节点
         head = new DLinkedNode();
         tail = new DLinkedNode();
         head.next = tail;
         tail.pre = head;
     }
-    
+
     public int get(int key) {
         DLinkedNode node = cache.get(key);
         if (node == null) return -1;
-        // 移动到双向链表头部
         moveToHead(node);
         return node.value;
     }
-    
+
     public void put(int key, int value) {
         DLinkedNode node = cache.get(key);
-        if (node == null) { // 节点不存在，创建新节点
-            DLinkedNode newNode = new DLinkedNode(key, value);
-            cache.put(key, newNode);
+        if (node == null) {
+            node = new DLinkedNode(key, value);
+            cache.put(key, node);
+            addToHead(node);
             size++;
-            addToHead(newNode);
-
             if (size > capacity) {
-                DLinkedNode tail = removeTail();
-                cache.remove(tail.key);
+                cache.remove(tail.pre.key);
+                removeNode(tail.pre);
                 size--;
             }
-
-        } else { // 节点存在，更新节点
+        } else {
             node.value = value;
             moveToHead(node);
         }
@@ -176,31 +186,20 @@ class LRUCache {
         addToHead(node);
     }
 
-    public DLinkedNode removeTail() {
-        DLinkedNode node = tail.pre;
-        removeNode(node);
-        return node; 
+    public void removeNode(DLinkedNode node) {
+        DLinkedNode pre = node.pre, next = node.next;
+        pre.next = next;
+        next.pre = pre;
     }
 
     public void addToHead(DLinkedNode node) {
+        DLinkedNode next = head.next;
         node.pre = head;
-        node.next = head.next;
+        node.next = next;
         head.next = node;
-        node.next.pre = node;
-    }
-
-    public void removeNode(DLinkedNode node) {
-        node.pre.next = node.next;
-        node.next.pre = node.pre;
+        next.pre = node;
     }
 }
-
-/**
- * Your LRUCache object will be instantiated and called as such:
- * LRUCache obj = new LRUCache(capacity);
- * int param_1 = obj.get(key);
- * obj.put(key,value);
- */
 ```
 
 
@@ -209,19 +208,24 @@ class LRUCache {
 
 ``` java
 class Solution {
+    // 快速排序 只对需要排序的部分进一步排序，期望时间复杂度为O(n)
     public int findKthLargest(int[] nums, int k) {
         return quickSelect(nums, 0, nums.length - 1, nums.length - k);
     }
 
-    public int quickSelect(int[] nums, int l, int r, int index) {
-        int pos = randomSelect(nums, l, r);
-        if (pos == index) return nums[pos]; // 根据index进行加速
+    // 1. 随机选择基元，然后划分数组
+    // 2. 判断划分后的基元与目标的相对位置，有选择的递归排序
+    public int quickSelect(int[] nums, int l, int r, int index) { // index 是倒数第k个元素的下标
+        int pos = randomPartition(nums, l, r);
+        if (pos == index) return nums[pos]; // 找到第k大的元素直接退出
         else {
-            return pos > index ? quickSelect(nums, l, pos - 1, index) : quickSelect(nums, pos + 1, r, index);
+            // 如果index在pos的右边，则只需要对右边进行递归排序，如果在左边就对左边进行递归排序
+            return index > pos ? quickSelect(nums, pos + 1, r, index) : quickSelect(nums, l, pos - 1, index);
         }
     }
 
-    public int randomSelect(int[] nums, int l, int r) {
+    // 该函数随机选择基元，然后划分数组，并返回基元的下标
+    public int randomPartition(int[] nums, int l, int r) {
         int i = new Random().nextInt(r - l + 1) + l;
         swap(nums, i, r);
         return partition(nums, l, r);
@@ -230,8 +234,8 @@ class Solution {
     public int partition(int[] nums, int l, int r) {
         int flag = nums[r];
         int i = l - 1;
-        for (int j = l; j <= r - 1; j++) {
-            if (nums[j] <= flag) {
+        for (int j = l; j < r; j++) {
+            if (nums[j] < flag) {
                 i++;
                 swap(nums, i, j);
             }
@@ -240,10 +244,10 @@ class Solution {
         return i + 1;
     }
 
-    public void swap(int[] nums, int l, int r) {
-        int temp = nums[l];
-        nums[l] = nums[r];
-        nums[r] = temp;
+    public void swap(int[] nums, int i, int j) {
+        int temp = nums[i];
+        nums[i] = nums[j];
+        nums[j] = temp;
     }
 }
 ```
@@ -362,40 +366,24 @@ class Solution {
 #### [21. 合并两个有序链表](https://leetcode.cn/problems/merge-two-sorted-lists/)
 
 ``` java
-/**
- * Definition for singly-linked list.
- * public class ListNode {
- *     int val;
- *     ListNode next;
- *     ListNode() {}
- *     ListNode(int val) { this.val = val; }
- *     ListNode(int val, ListNode next) { this.val = val; this.next = next; }
- * }
- */
 class Solution {
     public ListNode mergeTwoLists(ListNode list1, ListNode list2) {
         ListNode dummy = new ListNode();
-        ListNode head1 = list1, head2 = list2, cur = dummy;
-        while (head1 != null && head2 != null) {
-            if (head1.val < head2.val) {
-                cur.next = head1;
-                head1 = head1.next;
+        ListNode cur = dummy;
+
+        while (list1 != null && list2 != null) {
+            if (list1.val < list2.val) {
+                cur.next = list1;
+                list1 = list1.next;
             } else {
-                cur.next = head2;
-                head2 = head2.next;
+                cur.next = list2;
+                list2 = list2.next;
             }
             cur = cur.next;
         }
-        while (head1 != null) {
-            cur.next = head1;
-            head1 = head1.next;
-            cur = cur.next;
-        }
-        while (head2 != null) {
-            cur.next = head2;
-            head2 = head2.next;
-            cur = cur.next;
-        }
+
+        if (list1 != null) cur.next = list1;
+        if (list2 != null) cur.next = list2;
 
         return dummy.next;
     }
@@ -452,7 +440,9 @@ class Solution {
 
 
 
-#### [33. 搜索旋转排序数组](https://leetcode.cn/problems/search-in-rotated-sorted-array/)
+#### [33. 搜索旋转排序数组](https://leetcode.cn/problems/search-in-rotated-sorted-array/)√
+
+[题解](https://leetcode.cn/problems/search-in-rotated-sorted-array/solution/er-fen-cha-zhao-di-gui-bian-xing-xuan-zh-j9cg/)
 
 ``` java
 class Solution {
@@ -713,30 +703,31 @@ class Solution {
 ``` java
 public class Solution {
     public ListNode getIntersectionNode(ListNode headA, ListNode headB) {
+        int m = 0, n = 0;
         ListNode curA = headA, curB = headB;
-        int countA = 0, countB = 0;
+
         while (curA != null) {
-            countA++;
+            m++;
             curA = curA.next;
         }
         while (curB != null) {
-            countB++;
+            n++;
             curB = curB.next;
         }
-
-        int des = countA > countB ? countA - countB : countB - countA;
-        curA = headA;
-        curB = headB;
-        if (countA > countB) {
-            while (des > 0) {
-                curA = curA.next;
-                des--;
-            }
+				
+      	// 优雅永不过时
+        int diff = Math.abs(n - m);
+        if (n > m) {
+            curA = headB;
+            curB = headA;
         } else {
-            while (des > 0) {
-                curB = curB.next;
-                des--;
-            }
+            curA = headA;
+            curB = headB;
+        }
+
+        while (diff > 0) {
+            curA = curA.next;
+            diff--;
         }
 
         while (curA != null && curB != null) {
@@ -746,6 +737,7 @@ public class Solution {
         }
 
         return null;
+
     }
 }
 ```
@@ -796,48 +788,44 @@ class Solution {
 #### [23. 合并K个升序链表](https://leetcode.cn/problems/merge-k-sorted-lists/)
 
 ``` java
-/**
- * Definition for singly-linked list.
- * public class ListNode {
- *     int val;
- *     ListNode next;
- *     ListNode() {}
- *     ListNode(int val) { this.val = val; }
- *     ListNode(int val, ListNode next) { this.val = val; this.next = next; }
- * }
- */
-class Solution { // 分治思想优化顺序合并
-    public ListNode mergeKLists(ListNode[] lists) {
-        ListNode res = merge(lists, 0, lists.length - 1);
-        return res;
-    }
+class Solution {
     
-    public ListNode merge(ListNode[] lists, int l, int r) {
-        if (l == r) return lists[l];
-        if (l > r) return null;
-        int mid = (l + r) >> 1;
-        ListNode left = merge(lists, l, mid); // 先各自解决子问题
-        ListNode right = merge(lists, mid + 1, r);
-        return mergeTwoList(left, right); // 最后做总处理
+    public ListNode mergeKLists(ListNode[] lists) {
+        if (lists.length == 0) return null;
+        return mergeList(lists, 0, lists.length - 1);
     }
 
-    public ListNode mergeTwoList(ListNode list1, ListNode list2) {
+    // 1. 将区间分成两半，递归各自合并排序
+    // 2. 将两个区间合并得到的链表再次合并得到最终的有序链表
+    public ListNode mergeList(ListNode[] lists, int l, int r) {
+        if (l == r) return lists[l];
+        
+        int mid = (l + r) / 2;
+        ListNode list1 = mergeList(lists, l, mid);
+        ListNode list2 = mergeList(lists, mid + 1, r);
+
+        return merge(list1, list2);
+    }
+
+    // 合并两个链表
+    public ListNode merge(ListNode list1, ListNode list2) {
         ListNode dummy = new ListNode();
-        ListNode cur1 = list1, cur2 = list2, cur = dummy;
-        while (cur1 != null && cur2 != null) {
-            if (cur1.val < cur2.val) {
-                cur.next = cur1;
-                cur1 = cur1.next;
+        ListNode cur = dummy;
+
+        while (list1 != null && list2 != null) {
+            if (list1.val < list2.val) {
+                cur.next = list1;
+                list1 = list1.next;
             } else {
-                cur.next = cur2;
-                cur2 = cur2.next;
+                cur.next = list2;
+                list2 = list2.next;
             }
             cur = cur.next;
         }
-        cur.next = cur1 == null ? cur2 : cur1;
+        cur.next = (list1 != null) ? list1 : list2;
+
         return dummy.next;
     }
-
 }
 ```
 
@@ -921,13 +909,19 @@ class Solution {
 
 ``` java
 public class Solution {
+    // 快慢指针判断链表是否有环
+    // 找链表中首次入环的节点
     public ListNode detectCycle(ListNode head) {
+        if (head == null || head.next == null) return null;
+
         ListNode fast = head, slow = head;
 
-        while (fast != null && fast.next != null) {
+        while (!(fast == null || fast.next == null)) {
             fast = fast.next.next;
             slow = slow.next;
-            if (slow == fast) {
+            // 发现有环
+            // 重新用一个指针从起点出发，再次相遇就是首次入环的节点
+            if (fast == slow) {
                 slow = head;
                 while (slow != fast) {
                     slow = slow.next;
@@ -936,7 +930,6 @@ public class Solution {
                 return fast;
             }
         }
-
         return null;
     }
 }
@@ -999,54 +992,49 @@ class Solution {
 #### [143. 重排链表](https://leetcode.cn/problems/reorder-list/)
 
 ``` java
-/**
- * Definition for singly-linked list.
- * public class ListNode {
- *     int val;
- *     ListNode next;
- *     ListNode() {}
- *     ListNode(int val) { this.val = val; }
- *     ListNode(int val, ListNode next) { this.val = val; this.next = next; }
- * }
- */
 class Solution {
     public void reorderList(ListNode head) {
-        ListNode dummy = new ListNode();
-        dummy.next = head;
-        ListNode cur = dummy;
-        int count = 0;
-        while (cur.next != null) {
+        // 计算长度,拆分
+        int length = 0;
+        ListNode cur = head;
+        
+        while (cur != null) {
+            length++;
             cur = cur.next;
-            count++;
         }
+        if (length <= 2) return;
 
-        if (count <= 2) return;
-
-        int half = (count + 1) / 2;
-        cur = dummy;
-        while (half > 0) {
-            cur = cur.next;
+        int half = (length / 2 + 1 + length % 2);
+        cur = head;
+        while (half - 2 > 0) {
             half--;
+            cur = cur.next;
         }
-
-        ListNode left = head, right = cur.next;
+        // 翻转后半部分
+        ListNode list2 = reverse(cur.next), list1 = head;
         cur.next = null;
-        cur = dummy;
-        right = reverse(right);
+        // 合并
+        merge(list1, list2);
+    }
 
-        while (left != null && right != null) {
-            cur.next = left;
-            left = left.next;
+    public void merge(ListNode list1, ListNode list2) {
+        ListNode dummy = new ListNode();
+        ListNode cur = dummy;
+
+        while (list1 != null && list2 != null) {
+            cur.next = list1;
+            list1 = list1.next;
             cur = cur.next;
-            cur.next = right;
-            right = right.next;
+            cur.next = list2;
+            list2 = list2.next;
             cur = cur.next;
         }
-        cur.next = left;
+        cur.next = list1 != null ? list1 : list2;
     }
 
     public ListNode reverse(ListNode head) {
-        ListNode cur = head, pre = null, temp = null;
+        ListNode pre = null, cur = head, temp = null;
+
         while (cur.next != null) {
             temp = cur.next;
             cur.next = pre;
@@ -1055,7 +1043,7 @@ class Solution {
         }
         cur.next = pre;
         return cur;
-    }
+    } 
 }
 ```
 
@@ -1202,11 +1190,15 @@ class Solution {
 
 ``` java
 class Solution {
+    // 快慢指针，虚拟头结点
     public ListNode removeNthFromEnd(ListNode head, int n) {
-        ListNode dummy = new ListNode();
-        dummy.next = head;
+        if (head == null) return head;
 
-        ListNode fast = dummy, slow = dummy;
+        ListNode danny = new ListNode();
+        danny.next = head;
+				// 确定fast和slow的起始位置
+        ListNode fast = danny, slow = danny;
+				
         while (n > 0) {
             fast = fast.next;
             n--;
@@ -1219,7 +1211,7 @@ class Solution {
 
         slow.next = slow.next.next;
 
-        return dummy.next;
+        return danny.next;
     }
 }
 ```
@@ -1395,22 +1387,25 @@ class Solution {
 ``` java
 class Solution {
     public ListNode deleteDuplicates(ListNode head) {
+        if (head == null || head.next == null) return head;
         ListNode dummy = new ListNode();
         dummy.next = head;
         ListNode pre = dummy, cur = head;
 
+        // 两个指针
+        // pre指向前面保存的节点的最后一个节点
+        // cur指向当前要判断的节点
+        // 循环结束条件：当前判断节点为空或者是最后一个节点
         while (cur != null && cur.next != null) {
             if (cur.val == cur.next.val) {
                 int target = cur.val;
-                while (cur != null && cur.val == target) cur = cur.next; // 寻找重复数字
+                while (cur != null && cur.val == target) cur = cur.next;
                 pre.next = cur;
-                cur = pre.next;
                 continue;
             }
-            pre = pre.next;
+            pre = cur;
             cur = cur.next;
         }
-
         return dummy.next;
     }
 }
@@ -2314,4 +2309,164 @@ class Solution {
     }
 }
 ```
+
+
+
+#### [470. 用 Rand7() 实现 Rand10()](https://leetcode.cn/problems/implement-rand10-using-rand7/)
+
+拒绝采样
+
+``` java
+class Solution extends SolBase {
+    public int rand10() {
+        while (true) {
+            int a = rand7();
+            int b = rand7();
+            int c = (a - 1) * 7 + b;
+            if (c <= 40) return c % 10 + 1;
+
+            b = c - 40;
+            a = rand7();
+            c = (b - 1) * 7 + a;
+            if (c <= 60) return c % 10 + 1;
+
+            b = c - 60;
+            a = rand7();
+            c = (b - 1) * 7 + a;
+            if (c <= 20) return c % 10 + 1;
+        }
+    }
+}
+```
+
+
+
+#### [112. 路径总和](https://leetcode.cn/problems/path-sum/)
+
+```` java
+class Solution {
+    public boolean hasPathSum(TreeNode root, int targetSum) {
+        if (root == null) return false;
+        return trackback(root, targetSum, root.val); // 从当前节点的子节点开始搜索,因为需要判断叶子节点
+    }
+
+    public boolean trackback(TreeNode root, int targetSum, int sum) {
+        if (root.left == null && root.right == null && sum == targetSum) return true; 
+
+        if (root.left != null) {
+            boolean left = trackback(root.left, targetSum, sum + root.left.val);
+            if (left) return true;
+        }
+
+        if (root.right != null) {
+            boolean right = trackback(root.right, targetSum, sum + root.right.val);
+            if (right) return true;
+        }
+
+        return false;
+    }
+}
+````
+
+
+
+#### [24. 两两交换链表中的节点](https://leetcode.cn/problems/swap-nodes-in-pairs/)
+
+```java
+class Solution {
+    // 将链表分为很多的2元祖，在2元祖内部进行链表反转，再进行合并
+  	// 需要考虑的点：
+  	// 1. 虚拟头指针
+  	// 2. 翻转一共需要几个指针和步骤
+  	// 3. 循环退出的条件是什么
+    public ListNode swapPairs(ListNode head) {
+        if (head == null || head.next == null) return head;
+
+        ListNode danny = new ListNode();
+        danny.next = head;
+
+        ListNode pre = danny, cur = head, next = null; 
+
+        while (!(cur == null || cur.next == null)) { // 这里应该写成||避免出现空指针错误
+          	// 翻转和拼接
+            next = cur.next;
+            cur.next = next.next;
+            next.next = cur;
+            pre.next = next;
+						
+            pre = cur;
+            cur = cur.next;
+        }
+
+        return danny.next;
+    }
+}
+```
+
+
+
+#### [141. 环形链表](https://leetcode.cn/problems/linked-list-cycle/)
+
+```java
+public class Solution {
+    // 快慢指针
+    public boolean hasCycle(ListNode head) {
+        ListNode fast = head, slow = head;
+
+        while (!(fast == null || fast.next == null)) {
+            slow = slow.next;
+            fast = fast.next.next;
+            if (fast == slow) return true;
+        }
+
+        return false;
+    }
+}
+```
+
+
+
+#### [92. 反转链表 II](https://leetcode.cn/problems/reverse-linked-list-ii/)
+
+```java
+class Solution {
+    public ListNode reverseBetween(ListNode head, int left, int right) {
+        ListNode dummy = new ListNode();
+        dummy.next = head;
+        ListNode start = dummy, end = dummy;
+
+        while (left - 1 > 0) {
+            start = start.next;
+            left--;
+        }
+        while (right > 0) {
+            end = end.next;
+            right--;
+        }
+        ListNode next = end.next;
+        reverse(start.next, end);
+        start.next.next = next;
+        start.next = end;
+
+        return dummy.next;
+    }
+
+    // 翻转链表
+    public void reverse(ListNode start, ListNode end) {
+        ListNode pre = null, cur = start, next = null;
+
+        while (cur != end) {
+            next = cur.next;
+            cur.next = pre;
+            pre = cur;
+            cur = next;
+        }
+        cur.next = pre;
+    }
+}
+```
+
+
+
+
 
