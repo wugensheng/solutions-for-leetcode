@@ -1470,6 +1470,7 @@ class Solution {
 
 ``` java
 class Solution {
+  	// 线性增长的额外空间
     public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
         ListNode head = null, tail = null;
         int add = 0;
@@ -1491,6 +1492,43 @@ class Solution {
         }
 
         return head;
+    }
+}
+```
+
+```java
+class Solution {
+  	// 常数的额外空间
+    public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
+        ListNode dummy = new ListNode();
+        ListNode pre = dummy;
+        dummy.next = l1;
+
+        // 逐位相加
+        int flag = 0;
+        while (l1 != null && l2 != null) {
+            int temp = l1.val + l2.val + flag;
+            l1.val = temp % 10;
+            flag = temp / 10;
+            l1 = l1.next;
+            pre = pre.next;
+            l2 = l2.next;
+        }
+        // 高位继续相加
+        ListNode prepre = pre;
+        pre.next = (l1 != null ? l1 : l2);
+        pre = pre.next;
+        while (pre != null) {
+            int temp = pre.val + flag;
+            pre.val = temp % 10;
+            flag = temp / 10;
+            pre = pre.next;
+            prepre = prepre.next;
+        }
+        // 最高位判断
+        if (flag != 0) prepre.next = new ListNode(flag, null);
+
+        return dummy.next;
     }
 }
 ```
@@ -1668,19 +1706,20 @@ class Solution {
 ```` java
 class Solution {
     public ListNode getKthFromEnd(ListNode head, int k) {
-        ListNode fast = head, slow = head;
-
-        while (k - 1 > 0) {
-            fast = fast.next;
+        ListNode dummy = new ListNode();
+        dummy.next = head;
+        ListNode fast = dummy, slow = dummy;
+        while (k + 1 > 0) {
             k--;
+            fast = fast.next;
         }
 
-        while (fast.next != null) {
+        while (fast != null) {
             fast = fast.next;
             slow = slow.next;
         }
 
-        return slow;
+        return slow.next;
     }
 }
 ````
@@ -2393,8 +2432,8 @@ class Solution {
         danny.next = head;
 
         ListNode pre = danny, cur = head, next = null; 
-
-        while (!(cur == null || cur.next == null)) { // 这里应该写成||避免出现空指针错误
+				// cur指向下一轮翻转的第一个节点，下一次反转开始判断当前轮是否满足翻转的需要
+        while (!(cur == null || cur.next == null)) {
           	// 翻转和拼接
             next = cur.next;
             cur.next = next.next;
@@ -2474,6 +2513,122 @@ class Solution {
 ```
 
 
+
+#### [234. 回文链表](https://leetcode.cn/problems/palindrome-linked-list/)
+
+```java
+class Solution {
+    public boolean isPalindrome(ListNode head) {
+        if (head.next == null) return true;
+
+        int length = 0;
+        ListNode cur = head;
+        while (cur != null) {
+            length++;
+            cur = cur.next;
+        }
+        int half = length / 2 + length % 2;
+        cur = head;
+        while (half > 0) {
+            half--;
+            cur = cur.next;
+        }
+
+        ListNode newHead = reverse(cur);
+
+        while (newHead != null) {
+            if (newHead.val != head.val) return false;
+            newHead = newHead.next;
+            head = head.next;
+        }
+        return true;
+    }
+
+    public ListNode reverse(ListNode head) {
+        ListNode pre = null, cur = head, next = null;
+
+        while (cur.next != null) {
+            next = cur.next;
+            cur.next = pre;
+            pre = cur;
+            cur = next;
+        }
+        cur.next = pre;
+        return cur;
+    }
+}
+```
+
+
+
+#### [83. 删除排序链表中的重复元素](https://leetcode.cn/problems/remove-duplicates-from-sorted-list/)
+
+```java
+class Solution {
+    public ListNode deleteDuplicates(ListNode head) {
+        if (head == null || head.next == null) return head;
+
+        ListNode cur = head;
+
+        // cur指向当前需要判断的节点,由于和后续节点相关，因为退出条件是两个节点都不为空
+        while (cur != null && cur.next != null) {
+            if (cur.val == cur.next.val) {
+                int target = cur.val;
+                ListNode next = cur.next;
+                while (next != null && next.val == target) next = next.next;
+                cur.next = next;
+            }
+            cur = cur.next;
+        }
+
+        return head;
+    }
+}
+```
+
+
+
+#### [138. 复制带随机指针的链表](https://leetcode.cn/problems/copy-list-with-random-pointer/)
+
+```java
+class Solution {
+    public Node copyRandomList(Node head) {
+        if (head == null) return null;
+        // 先遍历一遍，用哈希表记录指针地址和序号，并创建新链表，并记录新链表的指针地址和序号的哈希表
+        // 再遍历一遍，根据对应关系，填充新链表的randeom
+
+        // copy 的链表需要知道原先链表中对应位置的节点指向的是自己的第几个节点
+        HashMap<Node, Integer> map1 = new HashMap<Node, Integer>();
+        HashMap<Integer, Node> map2 = new HashMap<Integer, Node>();
+        Node dummy = new Node(0);
+        Node l1 = head, l2 = dummy;
+        int index = 0;
+
+        while (l1 != null) {
+            map1.put(l1, index);
+            l2.next = new Node(l1.val);
+            map2.put(index, l2.next);
+            l2 = l2.next;
+            l1 = l1.next;
+            index++;
+        }
+        l2.next = null;
+
+        l1 = head;
+        l2 = dummy.next;
+        while (l1 != null) {
+            if (l1.random == null) {
+                l2.random = null;
+            } else {
+                l2.random = map2.get(map1.get(l1.random));
+            }
+            l1 = l1.next;
+            l2 = l2.next;
+        }j
+        return dummy.next;
+    }
+}
+```
 
 
 
