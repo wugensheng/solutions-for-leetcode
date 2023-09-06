@@ -2632,3 +2632,38 @@ class Solution {
 
 
 
+#### [61. 旋转链表](https://leetcode.cn/problems/rotate-list/)
+
+```java
+class Solution {
+    public ListNode rotateRight(ListNode head, int k) {
+        if (head == null || head.next == null) return head;
+        ListNode cur = head;
+        int length = 0;
+        
+        while (cur != null) {
+            length++;
+            cur = cur.next;
+        }
+        
+        int realK = k % length;
+        if (realK == 0) return head;
+        int index = length - realK;
+
+        cur = head;
+        while (index - 1 > 0) {
+            index--;
+            cur = cur.next;
+        }
+
+        ListNode newHead = cur.next;
+        cur.next = null;
+        cur = newHead;
+        while (cur.next != null) cur = cur.next;
+        cur.next = head;
+
+        return newHead;
+    }
+}
+```
+
