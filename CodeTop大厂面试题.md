@@ -416,14 +416,15 @@ class Solution {
 ``` java
 class Solution {
     public List<List<Integer>> levelOrder(TreeNode root) {
-        List<List<Integer>> res = new ArrayList<>();
+        List<List<Integer>> res = new ArrayList();
         if (root == null) return res;
 
-        Queue<TreeNode> q = new LinkedList<>();
+        // 当队列中某一层有节点时，将该层节点全部取出，同时将下层节点放入
+        Queue<TreeNode> q = new LinkedList();
         q.offer(root);
         while (!q.isEmpty()) {
             int size = q.size();
-            List<Integer> list = new ArrayList<>();
+            List<Integer> list = new ArrayList();
             for (int i = 0; i < size; i++) {
                 TreeNode node = q.poll();
                 list.add(node.val);
