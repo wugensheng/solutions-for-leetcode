@@ -1,6 +1,6 @@
 
 
-####  [3. 无重复字符的最长子串](https://leetcode.cn/problems/longest-substring-without-repeating-characters/)
+#### [3. 无重复字符的最长子串](https://leetcode.cn/problems/longest-substring-without-repeating-characters/)
 
 用滑动窗口/双指针维护一个不重复序列：
 
@@ -2758,6 +2758,39 @@ class Solution {
         root.left = left;
         root.right = right;
         return root;
+    }
+}
+```
+
+
+
+#### [662. 二叉树最大宽度](https://leetcode.cn/problems/maximum-width-of-binary-tree/)
+
+```java
+class Solution {
+  	// 广度优先遍历，计算每一行最左侧和最右侧的节点的index之间的差值
+    public int widthOfBinaryTree(TreeNode root) {
+        int res = 1;
+        Queue<Pair<TreeNode, Integer>> q = new LinkedList<>();
+        q.offer(new Pair<>(root, 1));
+        while (!q.isEmpty()) {
+            int size = q.size();
+            int left = 0;
+            int right = 0;
+            for (int i = 0; i < size; i++) {
+                Pair<TreeNode, Integer> pair = q.poll();
+                TreeNode node = pair.getKey();
+                int index = pair.getValue();
+                if (i == 0) left = index;
+                if (i == size - 1) right = index;
+                if (node.left != null) q.offer(new Pair<>(node.left, index * 2));
+                if (node.right != null) q.offer(new Pair<>(node.right, index * 2 + 1));
+            }
+            // System.out.println(right - left + 1);
+            res = Math.max(res, right - left + 1);
+        }
+
+        return res;
     }
 }
 ```
