@@ -2179,22 +2179,42 @@ class Solution {
 #### [101. 对称二叉树](https://leetcode.cn/problems/symmetric-tree/)
 
 ``` java
+// class Solution {
+//     public boolean isSymmetric(TreeNode root) {
+//         if (root == null) return true;
+//         return isTrue(root.left, root.right);
+//     }
+
+//     public boolean isTrue(TreeNode root1, TreeNode root2) {
+//         if (root1 == null && root2 == null) return true;
+//         if (!(root1 != null && root2 != null)) return false;
+//         if (root1.val != root2.val) return false;
+//         return isTrue(root1.left, root2.right) && isTrue(root1.right, root2.left);
+//     }
+// }
+
 class Solution {
     public boolean isSymmetric(TreeNode root) {
         if (root == null) return true;
-        boolean res = compare(root.left, root.right);
-        return res;
-    }
+        
+        Queue<TreeNode> q = new LinkedList<>();
+        q.offer(root.left);
+        q.offer(root.right);
+        while (!q.isEmpty()) {
+            TreeNode node1 = q.poll();
+            TreeNode node2 = q.poll();
+            if (node1 == null && node2 == null) continue;
+            if (!(node1 != null && node2 != null)) return false;
+            if (node1.val != node2.val) return false;
+            
+            q.offer(node1.left);
+            q.offer(node2.right);
 
-    public boolean compare(TreeNode left, TreeNode right) {
-        if (left == null && right == null) return true;
-        if (left == null) return false;
-        if (right == null) return false;
+            q.offer(node1.right);
+            q.offer(node2.left);
+        }
 
-        if (left.val != right.val) return false;
-        boolean a = compare(left.left, right.right);
-        boolean b = compare(left.right, right.left);
-        return a && b;
+        return true;
     }
 }
 ```
@@ -2698,6 +2718,24 @@ class Solution {
         node.right = getTree(inorder, postorder, index + 1, inEnd, postStart + index - inStart, postEnd - 1);
 
         return node;
+    }
+}
+```
+
+
+
+#### [226. 翻转二叉树](https://leetcode.cn/problems/invert-binary-tree/)
+
+```java
+class Solution {
+    // 先递归翻转，最后把根节点翻转，然后返回翻转好的节点
+    public TreeNode invertTree(TreeNode root) {
+        if (root == null) return null;
+        TreeNode right = invertTree(root.left);
+        TreeNode left = invertTree(root.right);
+        root.left = left;
+        root.right = right;
+        return root;
     }
 }
 ```
