@@ -2223,23 +2223,41 @@ class Solution {
 #### [129. 求根节点到叶节点数字之和](https://leetcode.cn/problems/sum-root-to-leaf-numbers/)
 
 ``` java
+// class Solution {
+//     int res = 0;
+//     public int sumNumbers(TreeNode root) {
+//         raverse(root, root.val);
+//         return res;
+//     }
+
+//     // 遍历所有叶子节点， 将和累加，参数sum表示递归进入节点root时就已经加上root算好的值
+//     public void raverse(TreeNode root, int sum) {
+//         if (root.left == null && root.right == null) {
+//             res += sum;
+//             return;
+//         }
+
+//         if (root.left != null) raverse(root.left, sum * 10 + root.left.val);
+//         if (root.right != null) raverse(root.right, sum * 10 + root.right.val);
+//     }
+// }
+
 class Solution {
     int res = 0;
     public int sumNumbers(TreeNode root) {
-        backtrack(root, 0);
+        raverse(root, 0);
         return res;
     }
 
-    public void backtrack(TreeNode root, int x) {
+    // 遍历所有叶子节点， 将和累加，参数sum表示递归进入节点root时就不加root节点的值
+    public void raverse(TreeNode root, int sum) {
         if (root.left == null && root.right == null) {
-            res += x * 10 + root.val;
+            res += sum * 10 + root.val;
             return;
         }
 
-        int temp = x * 10 + root.val;
-        if (root.left != null) backtrack(root.left, temp);
-        if (root.right != null) backtrack(root.right, temp);
-        return;
+        if (root.left != null) raverse(root.left, sum * 10 + root.val);
+        if (root.right != null) raverse(root.right, sum * 10 + root.val);
     }
 }
 ```
