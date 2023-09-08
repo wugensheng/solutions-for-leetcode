@@ -2094,23 +2094,22 @@ class MinStack {
 #### [110. 平衡二叉树](https://leetcode.cn/problems/balanced-binary-tree/)
 
 ``` java
-class Solution {
+lass Solution {
     public boolean isBalanced(TreeNode root) {
-        int res = checkBalanced(root);
-        return res != -1;
+        int flag = getDeepth(root);
+        if (flag == -1) return false;
+        return true;
     }
 
-    public int checkBalanced(TreeNode root) {
+    // 返回root的最大深度，如果root不是平衡二叉树，则返回-1
+    public int getDeepth(TreeNode root) {
         if (root == null) return 0;
-
-        int left = checkBalanced(root.left);
-        if (left == -1) return -1;
-        int right = checkBalanced(root.right);
-        if (right == -1) return -1;
-
-        if (left > right + 1 || right > left + 1) return -1;
-        
-        return left > right ? left + 1 : right + 1;
+        int leftDeepth = getDeepth(root.left);
+        if (leftDeepth == -1) return -1;
+        int rightDeepth = getDeepth(root.right);
+        if (rightDeepth == -1) return -1;
+        if (Math.abs(leftDeepth - rightDeepth) > 1) return -1;
+        return leftDeepth > rightDeepth ? leftDeepth + 1: rightDeepth + 1;
     }
 }
 ```
@@ -2267,6 +2266,30 @@ class Solution {
         return Math.max(left, right) + 1;
     }
 }
+
+class Solution {
+    // 记录全局最长直径
+    int maxLength = 0;
+    public int diameterOfBinaryTree(TreeNode root) {
+        if (root.left == null && root.right == null) return 0;
+        int leftLength = 0;
+        int rightLength = 0;
+        if (root.left != null) leftLength = getLength(root.left) + 1;
+        if (root.right != null) rightLength = getLength(root.right) + 1;
+        int length = leftLength + rightLength;
+        return Math.max(length, maxLength);
+    }
+    // 函数返回到root最长达单边长度
+    public int getLength(TreeNode root) {
+        if (root.left == null && root.right == null) return 0;
+        int leftLength = 0;
+        int rightLength = 0;
+        if (root.left != null) leftLength = getLength(root.left) + 1;
+        if (root.right != null) rightLength = getLength(root.right) + 1; 
+        maxLength = Math.max(maxLength, leftLength + rightLength);
+        return Math.max(leftLength, rightLength);
+    }
+}
 ```
 
 
@@ -2418,21 +2441,20 @@ class Solution extends SolBase {
 class Solution {
     public boolean hasPathSum(TreeNode root, int targetSum) {
         if (root == null) return false;
-        return trackback(root, targetSum, root.val); // 从当前节点的子节点开始搜索,因为需要判断叶子节点
+        return check(root, targetSum - root.val);
     }
 
-    public boolean trackback(TreeNode root, int targetSum, int sum) {
-        if (root.left == null && root.right == null && sum == targetSum) return true; 
+    // check返回root节点往下能否满足要求，能满足直接返回，否则继续递归
+    public boolean check(TreeNode root, int targetSum) {
+        if (root.left == null && root.right == null && targetSum == 0) return true; 
+        if (root.left == null && root.right == null) return false;
 
-        if (root.left != null) {
-            boolean left = trackback(root.left, targetSum, sum + root.left.val);
-            if (left) return true;
-        }
-
-        if (root.right != null) {
-            boolean right = trackback(root.right, targetSum, sum + root.right.val);
-            if (right) return true;
-        }
+        boolean left = false;
+        if (root.left != null) left = check(root.left, targetSum - root.left.val);
+        if (left == true) return true;
+        boolean right = false;
+        if (root.right != null) right = check(root.right, targetSum - root.right.val); 
+        if (right == true) return true;
 
         return false;
     }
