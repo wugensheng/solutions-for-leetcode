@@ -620,24 +620,26 @@ class Solution {
     public List<List<Integer>> zigzagLevelOrder(TreeNode root) {
         List<List<Integer>> res = new ArrayList<>();
         if (root == null) return res;
+
         Queue<TreeNode> q = new LinkedList<>();
-        boolean fromLeft = true; // 表示当前层的结果顺序
+        boolean fromLeft = true;
         q.offer(root);
         while (!q.isEmpty()) {
+            // 双端队列，每次从队列中拿出来放入双端队列的时候，进行翻转
+            Deque<Integer> list = new LinkedList<>();
             int size = q.size();
-            Deque<Integer> dq = new LinkedList<Integer>();
             for (int i = 0; i < size; i++) {
                 TreeNode node = q.poll();
-                if (fromLeft) { // 当前层节点从做到右放入dq中
-                    dq.offerLast(node.val);
+                if (fromLeft) {
+                    list.addLast(node.val);
                 } else {
-                    dq.offerFirst(node.val);
+                    list.addFirst(node.val);
                 }
                 if (node.left != null) q.offer(node.left);
                 if (node.right != null) q.offer(node.right);
             }
-            res.add(new LinkedList<>(dq));
-            fromLeft = !fromLeft; // 取反
+            fromLeft = !fromLeft;
+            res.add(new ArrayList<>(list));
         }
 
         return res;
@@ -1782,21 +1784,22 @@ class Solution {
         return getTree(preorder, inorder, 0, preorder.length - 1, 0, inorder.length - 1);
     }
 
+    // 表示从preorder和inorder的各自区域构建树
     public TreeNode getTree(int[] preorder, int[] inorder, int preStart, int preEnd, int inStart, int inEnd) {
-        if (preStart > preEnd) return null;
+        if (preEnd < preStart) return null;
 
-        int mid = preorder[preStart], index = 0;
-        TreeNode node = new TreeNode(mid);
+        TreeNode node = new TreeNode(preorder[preStart]);
+        // 找到前序的根节点在后序中的位置
+        int index = 0;
         for (int i = inStart; i <= inEnd; i++) {
-            if (inorder[i] == mid) {
+            if (inorder[i] == preorder[preStart]) {
                 index = i;
                 break;
             }
         }
+        node.left = getTree(preorder, inorder, preStart + 1, preStart + index - inStart, inStart, index - 1);
+        node.right = getTree(preorder, inorder, preStart + index - inStart + 1, preEnd, index + 1, inEnd);
 
-        node.left = getTree(preorder, inorder, preStart + 1, index - inStart + preStart, inStart, index - 1);
-        node.right = getTree(preorder, inorder, index - inStart + preStart + 1, preEnd, index + 1, inEnd);
-        
         return node;
     }
 }
