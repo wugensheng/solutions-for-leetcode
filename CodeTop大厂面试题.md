@@ -1225,18 +1225,19 @@ class Solution {
 
 ``` java
 class Solution {
+    // 二叉树的层序遍历的变种
     public List<Integer> rightSideView(TreeNode root) {
         List<Integer> res = new ArrayList<>();
         if (root == null) return res;
 
         Queue<TreeNode> q = new LinkedList<>();
         q.offer(root);
-        
         while (!q.isEmpty()) {
             int size = q.size();
             for (int i = 0; i < size; i++) {
                 TreeNode node = q.poll();
-                if (i ==  size - 1) {
+                // 只对每一层的最后一个节点进行收集
+                if (i == size - 1) {
                     res.add(node.val);
                 }
                 if (node.left != null) q.offer(node.left);
@@ -2667,6 +2668,36 @@ class Solution {
         cur.next = head;
 
         return newHead;
+    }
+}
+```
+
+
+
+#### [106. 从中序与后序遍历序列构造二叉树](https://leetcode.cn/problems/construct-binary-tree-from-inorder-and-postorder-traversal/)
+
+```java
+class Solution {
+    public TreeNode buildTree(int[] inorder, int[] postorder) {
+        return getTree(inorder, postorder, 0, inorder.length - 1, 0, postorder.length - 1);
+    }
+
+    public TreeNode getTree(int[] inorder, int[] postorder, int inStart, int inEnd, int postStart, int postEnd) {
+        if (inStart > inEnd) return null;
+
+        TreeNode node = new TreeNode(postorder[postEnd]);
+        int index = 0;
+        for (int i = inStart; i <= inEnd; i++) {
+            if (inorder[i] == postorder[postEnd]) {
+                index = i;
+                break;
+            }
+        }
+
+        node.left = getTree(inorder, postorder, inStart, index - 1, postStart, postStart + index - inStart - 1);
+        node.right = getTree(inorder, postorder, index + 1, inEnd, postStart + index - inStart, postEnd - 1);
+
+        return node;
     }
 }
 ```
