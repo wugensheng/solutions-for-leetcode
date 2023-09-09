@@ -2906,3 +2906,61 @@ lass Solution {
 }
 ```
 
+#### [297. 二叉树的序列化与反序列化](https://leetcode.cn/problems/serialize-and-deserialize-binary-tree/)
+
+```java
+public class Codec {
+    // 层序遍历
+    // Encodes a tree to a single string.
+    public String serialize(TreeNode root) {
+        if (root == null) return "[]";
+        StringBuilder res = new StringBuilder("[");
+        
+        Queue<TreeNode> q = new LinkedList<>();
+        q.offer(root);
+        while (!q.isEmpty()) {
+            int size = q.size();
+            for (int i = 0; i < size; i++) {
+                TreeNode node = q.poll();
+                if (node == null) res.append("null,");
+                else res.append(node.val+",");
+                if (node == null) continue;
+                q.offer(node.left);
+                q.offer(node.right);
+            }
+        }
+        res.deleteCharAt(res.length() - 1);
+        res.append("]");
+        return res.toString();
+    }
+
+    // Decodes your encoded data to tree.
+    public TreeNode deserialize(String data) {
+        if (data.equals("[]")) return null;
+        String[] array = data.substring(1, data.length() - 1).split(",");
+        int index = 0;
+        TreeNode root = new TreeNode(Integer.parseInt(array[index++]));
+        Queue<TreeNode> q = new LinkedList<>();
+        q.offer(root);
+        while (!q.isEmpty()) {
+            int size = q.size();
+            for (int i = 0; i < size; i++) {
+                TreeNode node = q.poll();
+                TreeNode left = null, right = null;
+                if (array[index].equals("null")) left = null;
+                else left = new TreeNode(Integer.parseInt(array[index]));
+                index++;
+                if (array[index].equals("null")) right = null;
+                else right = new TreeNode(Integer.parseInt(array[index]));
+                index++;
+                node.left = left;
+                node.right = right;
+                if (left != null) q.offer(left);
+                if (right != null) q.offer(right);
+            }
+        }
+        return root;
+    }
+}
+```
+
