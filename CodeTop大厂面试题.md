@@ -653,15 +653,19 @@ class Solution {
 
 ``` java
 class Solution {
+    // 递归函数返回公共祖先，如果返回null则表示该root下没有公共祖先
     public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
-        if (root == null || root == p || root == q) return root;
-
+        // 如果root为nul，则公共祖先在root下不存在
+        if (root == null) return null;
+        // 如果root为p和q中的一个，则root为root下的公共祖先
+        if (root == p || root == q) return root;
+        // 否则分别在左子树和右子树中寻找公共祖先
         TreeNode left = lowestCommonAncestor(root.left, p, q);
         TreeNode right = lowestCommonAncestor(root.right, p, q);
-
-        if (left == null) return right;
-        if (right == null) return left;
-        return root;
+        // 对找到的结果进行判断
+        if (left == null && right == null) return null;
+        if (left != null && right != null) return root;
+        return left != null ? left : right;
     }
 }
 ```
@@ -1074,6 +1078,39 @@ class Solution {
         if (maxSum > res) res = maxSum;
         
         return root.val + Math.max(leftMax, rightMax); // 返回该节点不坐根节点的最大路径和
+    }
+}
+```
+
+```java
+class Solution {
+    int maxSum = Integer.MIN_VALUE;
+    public int maxPathSum(TreeNode root) {
+        traverse(root);
+        return maxSum;
+    }
+
+    // 递归函数返回root节点下加上root的一侧最大路径和
+    public int traverse(TreeNode root) {
+        if (root.left == null && root.right == null) {
+            maxSum = Math.max(maxSum, root.val);
+            return root.val;
+        }
+        // 记录最大的路径和，一种有6种情况
+        maxSum = Math.max(maxSum, root.val);
+        int left = 0;
+        if (root.left != null) {
+            left = traverse(root.left);
+            maxSum = Math.max(maxSum, left + Math.max(root.val, 0));
+        }
+        int right = 0;
+        if (root.right != null) {
+            right = traverse(root.right);
+            maxSum = Math.max(maxSum, right + Math.max(root.val, 0));
+        }
+        if (root.left != null && root.right != null) maxSum = Math.max(maxSum, left + right + root.val);
+        // 返回带有root的最大路径和
+        return Math.max(root.val, Math.max(root.val + left, root.val + right));
     }
 }
 ```
@@ -2347,23 +2384,51 @@ class Solution {
 }
 ````
 
+```java
+class Solution {
+    List<List<Integer>> res = new ArrayList<>();
+    public List<List<Integer>> pathSum(TreeNode root, int targetSum) {
+        if (root == null) return res;
+        List<Integer> path = new ArrayList<>();
+        traverse(root, path, targetSum);
+        return res;
+    }
+
+    // 递归函数在叶子节点处记录path, targetSum表示没有减去了root节点值
+    public void traverse(TreeNode root, List<Integer> path, int targetSum) {
+        if (root.left == null && root.right == null && targetSum - root.val == 0) {
+            path.add(root.val);
+            res.add(new ArrayList<Integer>(path));
+            path.remove(path.size() - 1);
+            return;
+        }
+        if (root.left == null && root.right == null) return;
+        path.add(root.val);
+        if (root.left != null) traverse(root.left, path, targetSum - root.val);
+        if (root.right != null) traverse(root.right, path, targetSum - root.val);
+        path.remove(path.size() - 1);
+        return;
+    }
+}
+```
+
 
 
 #### [98. 验证二叉搜索树](https://leetcode.cn/problems/validate-binary-search-tree/)
 
 ``` java
 class Solution {
+    // 搜索二叉树的中序遍历就是有序的，每次只需要判断当前root节点的值是不是比前一个值小即可
+    // pre用来记录前一个节点
     TreeNode pre = null;
-
-    public boolean isValidBST(TreeNode root) { // 二叉搜索树的元素排列顺序就是，中序遍历的顺序，所以只要按照中序遍历，并记录pre节点，进行比价即可
+    public boolean isValidBST(TreeNode root) {
         if (root == null) return true;
 
         boolean left = isValidBST(root.left);
         if (pre != null && pre.val >= root.val) return false;
         pre = root;
-
         boolean right = isValidBST(root.right);
-
+        
         return left && right;
     }
 }
@@ -2809,6 +2874,34 @@ class Solution {
         }
 
         return res;
+    }
+}
+```
+
+#### [958. 二叉树的完全性检验](https://leetcode.cn/problems/check-completeness-of-a-binary-tree/)
+
+```java
+lass Solution {
+    int totalNode = 0;
+    int maxIndex = 1;
+    // 广度优先搜索变种，记录最大的节点index和所有节点的数量，进行对比判断是否是完全二叉树
+    public boolean isCompleteTree(TreeNode root) {
+        Queue<Pair<TreeNode, Integer>> q = new LinkedList<>();
+        q.offer(new Pair<>(root, 1));
+        while (!q.isEmpty()) {
+            int size = q.size();
+            for (int i = 0; i < size; i++) {
+                Pair<TreeNode, Integer> pair = q.poll();
+                TreeNode node = pair.getKey();
+                int index = pair.getValue();
+                totalNode++;
+                if (index > maxIndex) maxIndex = index;
+                if (node.left != null) q.offer(new Pair<>(node.left, index * 2));
+                if (node.right != null) q.offer(new Pair<>(node.right, index * 2 + 1));
+            }
+        }
+        if (totalNode != maxIndex) return false;
+        return true;
     }
 }
 ```
