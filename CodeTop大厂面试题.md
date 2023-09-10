@@ -307,15 +307,18 @@ class Solution {
 ``` java
 class Solution {
     public int maxSubArray(int[] nums) {
-        int[] dp = new int[nums.length + 1];
-        dp[0] = 0;
-        int res = Integer.MIN_VALUE;
-        for (int i = 1; i <= nums.length; i++) {
-            dp[i] = Math.max(dp[i - 1] + nums[i - 1], nums[i - 1]);
-            if (dp[i] > res) res = dp[i];
+        // dp[i]: 表示下标i结尾的连续数组的最大和
+        // dp[i] = max(dp[i - 1] + nums[i], nums[i])
+
+        int[] dp = new int[nums.length];
+        dp[0] = nums[0];
+        int max = dp[0];
+        for (int i = 1; i < nums.length; i++) {
+            dp[i] = Math.max(dp[i - 1] + nums[i], nums[i]);
+            max = Math.max(max, dp[i]);
         }
 
-        return res;
+        return max;
     }
 }
 ```
@@ -949,9 +952,13 @@ public class Solution {
 ``` java
 class Solution {
     public int lengthOfLIS(int[] nums) {
+        // dp[i]: 以nums[i] 结尾的最长递增子序列的长度
+        // dp[i] = for max(dp[i], dp[j] + 1) if nums[i] > nums[j]
+
         int[] dp = new int[nums.length];
         dp[0] = 1;
-        int res = 1;
+        int max = 1;
+        
         for (int i = 1; i < nums.length; i++) {
             dp[i] = 1;
             for (int j = 0; j < i; j++) {
@@ -959,10 +966,10 @@ class Solution {
                     dp[i] = Math.max(dp[i], dp[j] + 1);
                 }
             }
-            if (dp[i] > res) res = dp[i];
+            max = Math.max(max, dp[i]);
         }
 
-        return res;
+        return max;
     }
 }
 ```
